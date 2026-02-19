@@ -1,0 +1,33 @@
+name: shared
+description: Shared design system, localization, models, api clients.
+version: 0.0.1
+publish_to: "none"
+
+environment:
+  sdk: ">=3.10.7 <4.0.0"
+  flutter: ">=3.19.0"
+
+resolution: workspace
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  intl: ^0.20.2
+  freezed_annotation: ^2.4.1
+  json_annotation: ^4.9.0
+  dio: ^5.6.0
+  supabase_flutter: ^2.6.0
+
+dev_dependencies:
+  build_runner: ^2.4.11
+  freezed: ^2.5.2
+  json_serializable: ^6.9.0
+  flutter_test:
+    sdk: flutter
+  very_good_analysis: ^5.1.0
+
+flutter:
+  uses-material-design: true
+

@@ -1,0 +1,30 @@
+name: mada_app_workspace
+description: Melos workspace for Mada apps.
+publish_to: "none"
+
+environment:
+  sdk: ">=3.10.7 <4.0.0"
+
+workspace:
+  - apps/mobile
+  - apps/admin
+  - packages/shared
+
+dev_dependencies:
+  melos: ^7.4.0
+
+melos:
+  packages:
+    - apps/*
+    - packages/*
+  scripts:
+    build:
+      description: Build code generation for all packages
+      run: melos exec -- flutter pub run build_runner build --delete-conflicting-outputs
+    analyze:
+      description: Analyze all packages
+      run: melos exec -- flutter analyze
+    test:
+      description: Run tests for all packages
+      run: melos exec -- flutter test
+

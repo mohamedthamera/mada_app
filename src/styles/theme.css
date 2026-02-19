@@ -1,0 +1,20 @@
+:root {
+  --primary: #86f71d;
+  --primary-foreground: #15161a;
+  --background: #15161a;
+  --foreground: #dedee0;
+  --card: #2d2d31;
+  --card-foreground: #dedee0;
+  --secondary: #2d2d31;
+  --secondary-foreground: #b9b9bd;
+  --muted: #2d2d31;
+  --muted-foreground: #98968a;
+  --accent: #86f71d;
+  --accent-foreground: #15161a;
+  --border: #555549;
+  --input: #2d2d31;
+  --ring: #86f71d;
+  --chart-1: #86f71d;
+  --chart-2: #767468;
+  --chart-3: #555549;
+}
