@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../features/auth/presentation/device_check_guard.dart';
 import '../features/auth/presentation/login_screen.dart';
+import '../features/auth/presentation/set_new_password_screen.dart';
 import '../features/auth/presentation/signup_screen.dart';
 import '../features/home/presentation/home_shell.dart';
 import '../features/home/presentation/home_screen.dart';
@@ -33,8 +34,19 @@ CustomTransitionPage<void> _fadePage(Widget child) {
 final _publicPaths = ['/splash', '/onboarding', '/login', '/signup'];
 
 final _authRedirectNotifier = ValueNotifier<int>(0);
+bool _needsPasswordReset = false;
 
 void refreshAuthRedirect() => _authRedirectNotifier.value++;
+
+void setNeedsPasswordReset(bool value) {
+  _needsPasswordReset = value;
+  _authRedirectNotifier.value++;
+}
+
+void clearNeedsPasswordReset() {
+  _needsPasswordReset = false;
+  _authRedirectNotifier.value++;
+}
 
 final appRouter = GoRouter(
   initialLocation: '/splash',
@@ -44,10 +56,13 @@ final appRouter = GoRouter(
     final path = state.matchedLocation;
     final isPublic = _publicPaths.any((p) => path.startsWith(p));
 
+    if (isLoggedIn && _needsPasswordReset && path != '/set-new-password') {
+      return '/set-new-password';
+    }
     if (isLoggedIn && (path == '/login' || path == '/signup')) {
       return '/home';
     }
-    if (!isLoggedIn && !isPublic) {
+    if (!isLoggedIn && !isPublic && path != '/set-new-password') {
       return '/login';
     }
     return null;
@@ -68,6 +83,10 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/signup',
       pageBuilder: (context, state) => _fadePage(const SignupScreen()),
+    ),
+    GoRoute(
+      path: '/set-new-password',
+      pageBuilder: (context, state) => _fadePage(const SetNewPasswordScreen()),
     ),
     ShellRoute(
       builder: (context, state, child) => HomeShell(

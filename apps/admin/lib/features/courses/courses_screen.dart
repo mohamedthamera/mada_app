@@ -535,7 +535,10 @@ class CoursesScreen extends ConsumerWidget {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        appBar: AppBar(title: const Text('إدارة الدورات')),
+        appBar: AppBar(
+          leading: adminAppBarLeading(context),
+          title: const Text('إدارة الدورات'),
+        ),
         body: Padding(
           padding: const EdgeInsets.all(AppSpacing.lg),
           child: ref.watch(adminCoursesProvider).when(

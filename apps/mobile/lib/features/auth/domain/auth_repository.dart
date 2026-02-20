@@ -6,5 +6,11 @@ abstract class AuthRepository {
     required String password,
   });
   Future<void> signOut();
+
+  /// إرسال رابط إعادة تعيين كلمة المرور إلى البريد الإلكتروني
+  Future<void> resetPasswordForEmail(String email);
+
+  /// تحديث كلمة مرور المستخدم الحالي (بعد النقر على رابط الاستعادة)
+  Future<void> updatePassword(String newPassword);
 }
 

@@ -20,12 +20,102 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _loading = false;
+  bool _resetLoading = false;
+  final _resetEmailController = TextEditingController();
+  final _resetFormKey = GlobalKey<FormState>();
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _resetEmailController.dispose();
     super.dispose();
+  }
+
+  Future<void> _showForgotPasswordDialog() async {
+    _resetEmailController.text = _emailController.text.trim();
+    final sent = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: AlertDialog(
+          title: const AppText('إعادة تعيين كلمة المرور', style: AppTextStyle.title),
+          content: SingleChildScrollView(
+            child: Form(
+              key: _resetFormKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  AppText(
+                    'أدخل بريدك الإلكتروني وسنرسل لك رابطاً لإعادة تعيين كلمة المرور.',
+                    style: AppTextStyle.body,
+                    color: AppColors.textSecondary,
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+                  TextFormField(
+                    controller: _resetEmailController,
+                    keyboardType: TextInputType.emailAddress,
+                    decoration: const InputDecoration(
+                      labelText: 'البريد الإلكتروني',
+                      hintText: 'example@email.com',
+                    ),
+                    validator: (v) {
+                      if (v == null || v.trim().isEmpty) return 'أدخل البريد الإلكتروني';
+                      if (!_isValidEmail(v)) return 'أدخل بريداً إلكترونياً صحيحاً';
+                      return null;
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: _resetLoading ? null : () => Navigator.of(ctx).pop(false),
+              child: const Text('إلغاء'),
+            ),
+            FilledButton(
+              onPressed: _resetLoading
+                  ? null
+                  : () async {
+                      if (!_resetFormKey.currentState!.validate()) return;
+                      setState(() => _resetLoading = true);
+                      try {
+                        await ref.read(authRepositoryProvider).resetPasswordForEmail(
+                              _resetEmailController.text.trim(),
+                            );
+                        if (ctx.mounted) Navigator.of(ctx).pop(true);
+                      } catch (e) {
+                        if (ctx.mounted) {
+                          ScaffoldMessenger.of(ctx).showSnackBar(
+                            SnackBar(content: Text(authErrorMessage(e))),
+                          );
+                        }
+                      } finally {
+                        if (mounted) setState(() => _resetLoading = false);
+                      }
+                    },
+              child: _resetLoading
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Text('إرسال الرابط'),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (mounted && sent == true) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('تم إرسال رابط إعادة التعيين إلى بريدك. راجع بريدك واضغط الرابط لتعيين كلمة مرور جديدة.'),
+        ),
+      );
+    }
   }
 
   static bool _isValidEmail(String v) {
@@ -127,6 +217,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     if (v.length < 6) return 'كلمة المرور 6 أحرف على الأقل';
                     return null;
                   },
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: _loading ? null : _showForgotPasswordDialog,
+                    child: AppText(
+                      'هل نسيت كلمة المرور؟',
+                      style: AppTextStyle.body,
+                      color: AppColors.primary,
+                    ),
+                  ),
                 ),
                 const SizedBox(height: AppSpacing.xl),
                 AppButton(

@@ -3,6 +3,7 @@ import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared/shared.dart';
 import 'presentation/admin_subscriptions_providers.dart';
+import '../../core/constants/admin_breakpoints.dart';
 import '../../core/widgets/admin_widgets.dart';
 import 'admin_generate_codes.dart';
 
@@ -16,6 +17,7 @@ class SubscriptionsScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
+        leading: adminAppBarLeading(context),
         title: const Text('الاشتراكات'),
         backgroundColor: AppColors.background,
         elevation: 0,
@@ -29,7 +31,9 @@ class SubscriptionsScreen extends ConsumerWidget {
         ],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.xl),
+        padding: EdgeInsets.all(
+          AdminBreakpoints.isMobile(context) ? AppSpacing.md : AppSpacing.xl,
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

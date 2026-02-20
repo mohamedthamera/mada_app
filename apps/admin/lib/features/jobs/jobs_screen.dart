@@ -14,7 +14,10 @@ class AdminJobsScreen extends ConsumerWidget {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        appBar: AppBar(title: const Text('إدارة الوظائف')),
+        appBar: AppBar(
+          leading: adminAppBarLeading(context),
+          title: const Text('إدارة الوظائف'),
+        ),
         body: Padding(
           padding: const EdgeInsets.all(AppSpacing.lg),
           child: Column(
@@ -36,8 +39,10 @@ class AdminJobsScreen extends ConsumerWidget {
                               child: Text('لا توجد وظائف حالياً'),
                             );
                           }
-                          return DataTable2(
-                            columns: const [
+                          return SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: DataTable2(
+                              columns: const [
                               DataColumn(label: Text('المسمى الوظيفي')),
                               DataColumn(label: Text('الشركة')),
                               DataColumn(label: Text('الموقع')),
@@ -95,6 +100,7 @@ class AdminJobsScreen extends ConsumerWidget {
                                   ),
                                 )
                                 .toList(),
+                            ),
                           );
                         },
                         loading: () =>

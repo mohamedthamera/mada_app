@@ -106,6 +106,7 @@ class _InfluencersScreenState extends ConsumerState<InfluencersScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
+        leading: adminAppBarLeading(context),
         title: const Text('أكواد المؤثرين / الإحالة'),
         backgroundColor: AppColors.background,
         elevation: 0,

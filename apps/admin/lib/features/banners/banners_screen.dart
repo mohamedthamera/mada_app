@@ -5,6 +5,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:video_player/video_player.dart';
 import 'dart:typed_data';
 import 'presentation/admin_banner_providers.dart';
+import '../../core/widgets/admin_widgets.dart';
 
 class BannersScreen extends ConsumerWidget {
   const BannersScreen({super.key});
@@ -15,6 +16,7 @@ class BannersScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
+        leading: adminAppBarLeading(context),
         title: const Text('إدارة البنرات الإعلانية'),
         actions: [
           ElevatedButton.icon(

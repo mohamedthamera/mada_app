@@ -8,6 +8,7 @@ import 'package:shared/shared.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'data/admin_lesson_repository.dart';
 import 'data/video_upload_repository.dart';
+import '../../core/constants/admin_breakpoints.dart';
 import '../../core/widgets/admin_widgets.dart';
 
 String _lessonError(dynamic e) {
@@ -623,10 +624,20 @@ class _CourseLessonsScreenState extends ConsumerState<CourseLessonsScreen> {
       child: Scaffold(
         appBar: AppBar(
           title: Text('دروس: ${widget.courseTitle}'),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () => context.go('/courses'),
-          ),
+          leading: AdminBreakpoints.isMobile(context)
+              ? adminAppBarLeading(context)
+              : IconButton(
+                  icon: const Icon(Icons.arrow_back),
+                  onPressed: () => context.go('/courses'),
+                ),
+          actions: [
+            if (AdminBreakpoints.isMobile(context))
+              IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () => context.go('/courses'),
+                tooltip: 'العودة للدورات',
+              ),
+          ],
         ),
         body: Padding(
           padding: const EdgeInsets.all(AppSpacing.lg),

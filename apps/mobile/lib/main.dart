@@ -49,13 +49,15 @@ Future<void> main() async {
   // Sync profile when auth state changes (OAuth callback, login, etc.)
   final profileSync = ProfileSyncService(Supabase.instance.client);
   Supabase.instance.client.auth.onAuthStateChange.listen((data) async {
+    if (data.event == AuthChangeEvent.passwordRecovery) {
+      setNeedsPasswordReset(true);
+    }
     if (data.session?.user != null) {
       try {
         await profileSync.syncCurrentUser();
       } catch (e) {
         debugPrint('Profile sync error: $e');
       }
-      // Notify router to re-evaluate redirect (e.g. after OAuth callback)
       refreshAuthRedirect();
     }
   });

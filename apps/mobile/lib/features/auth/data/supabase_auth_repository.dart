@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../app/di.dart';
 import '../domain/auth_repository.dart';
 
@@ -32,6 +33,21 @@ class SupabaseAuthRepository implements AuthRepository {
   @override
   Future<void> signOut() async {
     await _client.auth.signOut();
+  }
+
+  @override
+  Future<void> resetPasswordForEmail(String email) async {
+    await _client.auth.resetPasswordForEmail(
+      email.trim(),
+      redirectTo: 'com.meda.app://login-callback/',
+    );
+  }
+
+  @override
+  Future<void> updatePassword(String newPassword) async {
+    await _client.auth.updateUser(
+      UserAttributes(password: newPassword),
+    );
   }
 }
 

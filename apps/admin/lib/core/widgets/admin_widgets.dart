@@ -1,5 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:shared/shared.dart';
+import '../constants/admin_breakpoints.dart';
+
+/// يوفر للم شاشات الأدمن إمكانية فتح الدرج على الموبايل
+class AdminDrawerScope extends InheritedWidget {
+  const AdminDrawerScope({
+    super.key,
+    required this.openDrawer,
+    required super.child,
+  });
+
+  final VoidCallback openDrawer;
+
+  static AdminDrawerScope? maybeOf(BuildContext context) {
+    return context.dependOnInheritedWidgetOfExactType<AdminDrawerScope>();
+  }
+
+  @override
+  bool updateShouldNotify(AdminDrawerScope oldWidget) =>
+      oldWidget.openDrawer != openDrawer;
+}
+
+/// زر القائمة لفتح الدرج (يُعرض على الموبايل فقط)
+Widget adminAppBarLeading(BuildContext context) {
+  final scope = AdminDrawerScope.maybeOf(context);
+  if (scope == null || !AdminBreakpoints.isMobile(context)) return const SizedBox.shrink();
+  return IconButton(
+    icon: const Icon(Icons.menu_rounded),
+    onPressed: scope.openDrawer,
+    tooltip: 'القائمة',
+  );
+}
 
 class AdminCard extends StatelessWidget {
   const AdminCard({
