@@ -583,7 +583,7 @@ class _BookFormDialogState extends ConsumerState<_BookFormDialog> {
                         label: Text(_fileFileName ?? 'رفع ملف PDF/EPUB *'),
                       ),
                       const SizedBox(width: 8),
-                      if (_filePath != null) Text('$_fileType • ${_fileSizeBytes != null ? "${(_fileSizeBytes / 1024).toStringAsFixed(1)} KB" : ""}', style: const TextStyle(fontSize: 12)),
+                      if (_filePath != null) Text('$_fileType • ${_fileSizeBytes != null ? "${(_fileSizeBytes! / 1024).toStringAsFixed(1)} KB" : ""}', style: const TextStyle(fontSize: 12)),
                     ],
                   ),
                   if (_uploading) const LinearProgressIndicator(),

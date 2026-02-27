@@ -4,7 +4,7 @@ part 'banner_model.freezed.dart';
 part 'banner_model.g.dart';
 
 @JsonSerializable(fieldRename: FieldRename.snake)
-@freezed
+@Freezed(fromJson: false, toJson: false)
 class BannerModel with _$BannerModel {
   const factory BannerModel({
     required String id,

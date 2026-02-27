@@ -30,29 +30,3 @@ Map<String, dynamic> _$BannerModelToJson(BannerModel instance) =>
       'is_active': instance.isActive,
       'created_at': instance.createdAt?.toIso8601String(),
     };
-
-_$BannerModelImpl _$$BannerModelImplFromJson(Map<String, dynamic> json) =>
-    _$BannerModelImpl(
-      id: json['id'] as String,
-      imageUrl: json['imageUrl'] as String,
-      videoUrl: json['videoUrl'] as String?,
-      title: json['title'] as String?,
-      linkUrl: json['linkUrl'] as String?,
-      orderIndex: (json['orderIndex'] as num?)?.toInt() ?? 0,
-      isActive: json['isActive'] as bool? ?? true,
-      createdAt: json['createdAt'] == null
-          ? null
-          : DateTime.parse(json['createdAt'] as String),
-    );
-
-Map<String, dynamic> _$$BannerModelImplToJson(_$BannerModelImpl instance) =>
-    <String, dynamic>{
-      'id': instance.id,
-      'imageUrl': instance.imageUrl,
-      'videoUrl': instance.videoUrl,
-      'title': instance.title,
-      'linkUrl': instance.linkUrl,
-      'orderIndex': instance.orderIndex,
-      'isActive': instance.isActive,
-      'createdAt': instance.createdAt?.toIso8601String(),
-    };

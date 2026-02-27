@@ -15,10 +15,6 @@ final _privateConstructorUsedError = UnsupportedError(
   'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
 );
 
-BannerModel _$BannerModelFromJson(Map<String, dynamic> json) {
-  return _BannerModel.fromJson(json);
-}
-
 /// @nodoc
 mixin _$BannerModel {
   String get id => throw _privateConstructorUsedError;
@@ -29,9 +25,6 @@ mixin _$BannerModel {
   int get orderIndex => throw _privateConstructorUsedError;
   bool get isActive => throw _privateConstructorUsedError;
   DateTime? get createdAt => throw _privateConstructorUsedError;
-
-  /// Serializes this BannerModel to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
 
   /// Create a copy of BannerModel
   /// with the given fields replaced by the non-null parameter values.
@@ -207,7 +200,7 @@ class __$$BannerModelImplCopyWithImpl<$Res>
 }
 
 /// @nodoc
-@JsonSerializable()
+
 class _$BannerModelImpl implements _BannerModel {
   const _$BannerModelImpl({
     required this.id,
@@ -219,9 +212,6 @@ class _$BannerModelImpl implements _BannerModel {
     this.isActive = true,
     this.createdAt,
   });
-
-  factory _$BannerModelImpl.fromJson(Map<String, dynamic> json) =>
-      _$$BannerModelImplFromJson(json);
 
   @override
   final String id;
@@ -267,7 +257,6 @@ class _$BannerModelImpl implements _BannerModel {
                 other.createdAt == createdAt));
   }
 
-  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
     runtimeType,
@@ -288,11 +277,6 @@ class _$BannerModelImpl implements _BannerModel {
   @pragma('vm:prefer-inline')
   _$$BannerModelImplCopyWith<_$BannerModelImpl> get copyWith =>
       __$$BannerModelImplCopyWithImpl<_$BannerModelImpl>(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$BannerModelImplToJson(this);
-  }
 }
 
 abstract class _BannerModel implements BannerModel {
@@ -306,9 +290,6 @@ abstract class _BannerModel implements BannerModel {
     final bool isActive,
     final DateTime? createdAt,
   }) = _$BannerModelImpl;
-
-  factory _BannerModel.fromJson(Map<String, dynamic> json) =
-      _$BannerModelImpl.fromJson;
 
   @override
   String get id;
