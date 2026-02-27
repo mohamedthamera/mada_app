@@ -1,5 +1,4 @@
-import 'dart:io';
-
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,6 +12,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'app/app.dart';
 import 'app/router.dart';
 import 'core/notifications/fcm_service.dart';
+import 'core/platform_helper.dart';
 import 'features/auth/data/profile_sync_service.dart';
 
 Future<void> main() async {
@@ -72,7 +72,7 @@ Future<void> main() async {
   }
 
   // منع لقطات الشاشة والتسجيل على أندرويد (المحتوى يظهر أسود عند التصوير)
-  if (Platform.isAndroid) {
+  if (!kIsWeb && await isAndroid()) {
     try {
       await FlutterWindowManager.addFlags(FlutterWindowManager.FLAG_SECURE);
     } catch (e) {

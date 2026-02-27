@@ -44,7 +44,11 @@ Seed data is in `supabase/seed.sql`.
 ## Scripts (Melos)
 - `melos run build` → code generation (freezed/json_serializable)
 - `melos run analyze` → analyze all packages
-- `melos run test` → tests
+- `melos run test` → Flutter unit/widget tests
+
+## Testing
+- **Flutter tests**: `melos run test` (or `flutter test` inside each app/package).
+- **TestSprite (E2E/UI)**: See [testsprite_tests/README.md](testsprite_tests/README.md). Run the Flutter web app (e.g. `cd apps/mobile && flutter run -d web-server --web-port=8080`), then use the TestSprite MCP in your IDE with “Help me test this project with TestSprite.” PRD and config reference are in `testsprite_tests/`.
 
 ## Project Structure
 ```

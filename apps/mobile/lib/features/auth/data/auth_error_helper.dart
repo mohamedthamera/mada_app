@@ -1,6 +1,9 @@
 /// ترجمة أخطاء Supabase Auth إلى رسائل عربية
 String authErrorMessage(dynamic e) {
   final msg = e.toString().toLowerCase();
+  if (msg.contains('supabase_not_configured')) {
+    return 'لم يتم إعداد الاتصال بالخادم. أضف SUPABASE_URL و SUPABASE_ANON_KEY في ملف .env.dev داخل مجلد apps/mobile';
+  }
   if (msg.contains('invalid login credentials') ||
       msg.contains('invalid_credentials')) {
     return 'البريد الإلكتروني أو كلمة المرور غير صحيحة';
@@ -25,6 +28,9 @@ String authErrorMessage(dynamic e) {
       msg.contains('valid email') ||
       msg.contains('email format')) {
     return 'البريد الإلكتروني غير صالح';
+  }
+  if (msg.contains('socket') || msg.contains('connection') || msg.contains('network') || msg.contains('failed host lookup') || msg.contains('connection refused')) {
+    return 'تعذر الاتصال بالخادم. تحقق من الإنترنت أو من إعدادات SUPABASE_URL في .env.dev';
   }
   // في الحالات الأخرى أظهر رسالة الخطأ الأصلية للمساعدة في التشخيص
   return 'حدث خطأ غير متوقع:\n${e.toString()}';

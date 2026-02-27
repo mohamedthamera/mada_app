@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared/shared.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/widgets/widgets.dart';
 import '../../profile/presentation/info_screens/privacy_policy_screen.dart';
 import '../../profile/presentation/info_screens/terms_of_use_screen.dart';
 import '../data/auth_error_helper.dart';
 import '../data/supabase_auth_repository.dart';
 import '../../referral/data/referral_repository.dart';
-import '../../../app/di.dart';
 
 class SignupScreen extends ConsumerStatefulWidget {
   const SignupScreen({super.key});
@@ -70,8 +70,19 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
         }
       }
       if (mounted) {
-        final redirect = GoRouterState.of(context).uri.queryParameters['redirect'] ?? '/home';
-        context.go(redirect);
+        // إذا كان تأكيد البريد مفعّلاً في Supabase فلن تكون هناك جلسة بعد التسجيل
+        final hasSession = Supabase.instance.client.auth.currentSession != null;
+        if (hasSession) {
+          final redirect = GoRouterState.of(context).uri.queryParameters['redirect'] ?? '/home';
+          context.go(redirect);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('تم إنشاء الحساب. يرجى تأكيد بريدك الإلكتروني من الرابط المرسل إليك ثم تسجيل الدخول.'),
+            ),
+          );
+          context.go('/login');
+        }
       }
     } catch (e) {
       if (!mounted) return;

@@ -4,8 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared/shared.dart';
 import '../../../core/widgets/widgets.dart';
-import '../data/books_repository.dart';
 import 'books_providers.dart';
+import '../../subscription/presentation/subscription_providers.dart';
 
 class BooksScreen extends ConsumerStatefulWidget {
   const BooksScreen({super.key});
@@ -58,8 +58,59 @@ class _BooksScreenState extends ConsumerState<BooksScreen> {
     }
   }
 
+  Widget _buildLockedView(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.xl),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 80,
+              height: 80,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.12),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.lock_rounded,
+                size: 40,
+                color: AppColors.primary,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.xl),
+            const AppText(
+              'صفحة الكتب للمشتركين',
+              style: AppTextStyle.title,
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            AppText(
+              'اشترك الآن لتصفح الكتب وتحميلها',
+              style: AppTextStyle.body,
+              color: AppColors.textSecondary,
+            ),
+            const SizedBox(height: AppSpacing.xl),
+            FilledButton.icon(
+              onPressed: () => context.go('/subscription'),
+              icon: const Icon(Icons.workspace_premium_rounded),
+              label: const Text('الذهاب للاشتراك'),
+              style: FilledButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.xl,
+                  vertical: AppSpacing.md,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final hasSubAsync = ref.watch(hasActiveSubscriptionProvider);
     final featuredAsync = ref.watch(featuredBooksProvider);
     final categoriesAsync = ref.watch(booksCategoriesProvider);
     final listAsync = ref.watch(booksListProvider);
@@ -71,7 +122,10 @@ class _BooksScreenState extends ConsumerState<BooksScreen> {
         appBar: AppBar(
           title: const AppText('الكتب', style: AppTextStyle.title),
         ),
-        body: RefreshIndicator(
+        body: hasSubAsync.when(
+          data: (hasSub) {
+            if (!hasSub) return _buildLockedView(context);
+            return RefreshIndicator(
           onRefresh: () async {
             ref.invalidate(featuredBooksProvider);
             ref.invalidate(booksCategoriesProvider);
@@ -238,6 +292,10 @@ class _BooksScreenState extends ConsumerState<BooksScreen> {
                 ),
             ],
           ),
+        );
+          },
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (_, __) => _buildLockedView(context),
         ),
       ),
     );

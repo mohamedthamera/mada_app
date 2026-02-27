@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../core/widgets/widgets.dart';
 import '../data/books_repository.dart';
 import 'books_providers.dart';
+import '../../subscription/presentation/subscription_providers.dart';
 
 class BookDetailsScreen extends ConsumerWidget {
   const BookDetailsScreen({super.key, required this.bookId});
@@ -25,7 +26,17 @@ class BookDetailsScreen extends ConsumerWidget {
           ),
         ),
         body: ref.watch(bookDetailProvider(bookId)).when(
-              data: (book) => _BookDetailContent(book: book, ref: ref),
+              data: (book) {
+                final hasSubAsync = ref.watch(hasActiveSubscriptionProvider);
+                return hasSubAsync.when(
+                  data: (hasSub) {
+                    if (!hasSub) return _BookDetailsLockedView();
+                    return _BookDetailContent(book: book, ref: ref);
+                  },
+                  loading: () => const Center(child: CircularProgressIndicator()),
+                  error: (_, __) => const _BookDetailsLockedView(),
+                );
+              },
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (e, _) => Center(
                 child: Padding(
@@ -168,6 +179,61 @@ class _BookDetailContent extends ConsumerWidget {
       width: 160,
       color: AppColors.surface,
       child: const Icon(Icons.menu_book_rounded, size: 64, color: AppColors.textMuted),
+    );
+  }
+}
+
+class _BookDetailsLockedView extends StatelessWidget {
+  const _BookDetailsLockedView();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.xl),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 80,
+              height: 80,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.12),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.lock_rounded,
+                size: 40,
+                color: AppColors.primary,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.xl),
+            const AppText(
+              'صفحة الكتب للمشتركين',
+              style: AppTextStyle.title,
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            AppText(
+              'اشترك الآن لتصفح الكتب وتحميلها',
+              style: AppTextStyle.body,
+              color: AppColors.textSecondary,
+            ),
+            const SizedBox(height: AppSpacing.xl),
+            FilledButton.icon(
+              onPressed: () => context.go('/subscription'),
+              icon: const Icon(Icons.workspace_premium_rounded),
+              label: const Text('الذهاب للاشتراك'),
+              style: FilledButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.xl,
+                  vertical: AppSpacing.md,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

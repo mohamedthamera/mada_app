@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared/shared.dart';
-import '../../../app/di.dart';
 import '../../../core/widgets/widgets.dart';
 import '../data/referral_repository.dart';
 import 'referral_providers.dart';

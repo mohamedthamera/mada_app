@@ -1,0 +1,12 @@
+{
+  "projectType": "frontend",
+  "localPort": 8080,
+  "projectPath": "/Users/mohammedthamer/Desktop/mada_app",
+  "testScope": "codebase",
+  "needLogin": true,
+  "credentials": {
+    "username": "test@example.com",
+    "password": "REPLACE_WITH_TEST_PASSWORD"
+  },
+  "_comment": "Use this as reference when configuring TestSprite via MCP or portal. Replace projectPath with your absolute workspace path and set localPort to the port where Flutter web is running (e.g. flutter run -d web-server --web-port=8080)."
+}
