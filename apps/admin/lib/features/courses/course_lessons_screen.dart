@@ -224,7 +224,7 @@ class _CourseLessonsScreenState extends ConsumerState<CourseLessonsScreen> {
                         );
                     if (ctx.mounted) Navigator.of(ctx).pop();
                     _loadLessons();
-                    if (mounted) {
+                    if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('تم حفظ ملفات الدرس')),
                       );
@@ -519,7 +519,7 @@ class _CourseLessonsScreenState extends ConsumerState<CourseLessonsScreen> {
                                   ),
                                 ],
                               ),
-                            )).toList(),
+                            )),
                           ],
                         ),
                       const SizedBox(height: 12),
@@ -591,7 +591,7 @@ class _CourseLessonsScreenState extends ConsumerState<CourseLessonsScreen> {
                         );
                   if (ctx.mounted) Navigator.of(ctx).pop();
                   _loadLessons();
-                  if (mounted) {
+                  if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('تمت إضافة الدرس')),
                     );

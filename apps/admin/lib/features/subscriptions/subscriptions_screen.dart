@@ -3,7 +3,6 @@ import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared/shared.dart';
 import 'presentation/admin_subscriptions_providers.dart';
-import '../../core/constants/admin_breakpoints.dart';
 import '../../core/widgets/admin_widgets.dart';
 import 'admin_generate_codes.dart';
 
@@ -30,11 +29,9 @@ class SubscriptionsScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(
-          AdminBreakpoints.isMobile(context) ? AppSpacing.md : AppSpacing.xl,
-        ),
-        child: Column(
+      body: AdminPageBody(
+        child: SingleChildScrollView(
+          child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const AdminGenerateCodes(),
@@ -184,12 +181,8 @@ class SubscriptionsScreen extends ConsumerWidget {
           ],
         ),
       ),
+      ),
     );
-  }
-
-  static String _shortId(String? id) {
-    if (id == null || id.length < 8) return '—';
-    return '${id.substring(0, 8)}...';
   }
 
   static String _formatDate(DateTime? d) {

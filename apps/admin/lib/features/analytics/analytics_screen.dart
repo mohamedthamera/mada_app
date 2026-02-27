@@ -3,7 +3,6 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared/shared.dart';
 import 'presentation/admin_analytics_providers.dart';
-import '../../core/constants/admin_breakpoints.dart';
 import '../../core/widgets/admin_widgets.dart';
 
 class AnalyticsScreen extends ConsumerWidget {
@@ -14,14 +13,15 @@ class AnalyticsScreen extends ConsumerWidget {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
+        backgroundColor: AppColors.background,
         appBar: AppBar(
           leading: adminAppBarLeading(context),
           title: const Text('التحليلات'),
+          backgroundColor: AppColors.background,
+          elevation: 0,
+          scrolledUnderElevation: 0,
         ),
-        body: Padding(
-          padding: EdgeInsets.all(
-            AdminBreakpoints.isMobile(context) ? AppSpacing.md : AppSpacing.lg,
-          ),
+        body: AdminPageBody(
           child: ref.watch(adminCountsProvider).when(
                 data: (counts) => Column(
                   children: [

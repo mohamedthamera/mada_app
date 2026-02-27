@@ -119,9 +119,9 @@ class _InfluencersScreenState extends ConsumerState<InfluencersScreen> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.xl),
-        child: Column(
+      body: AdminPageBody(
+        child: SingleChildScrollView(
+          child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             AdminSectionHeader(
@@ -291,6 +291,7 @@ class _InfluencersScreenState extends ConsumerState<InfluencersScreen> {
             ),
           ],
         ),
+      ),
       ),
     );
   }

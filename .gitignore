@@ -30,10 +30,13 @@ migrate_working_dir/
 **/build/
 **/coverage/
 
-# Env / secrets
+# Env / secrets (لا ترفع مفاتيح Supabase إلى GitHub)
 .env
 .env.*
 !.env.example
+**/env.dev
+**/env.staging
+**/env.prod
 
 # Symbolication / Obfuscation
 app.*.symbols

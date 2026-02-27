@@ -14,36 +14,41 @@ class BannersScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final bannersAsync = ref.watch(adminBannersProvider);
 
-    return Scaffold(
-      appBar: AppBar(
-        leading: adminAppBarLeading(context),
-        title: const Text('إدارة البنرات الإعلانية'),
-        actions: [
-          ElevatedButton.icon(
-            onPressed: () => _showAddBannerDialog(context, ref),
-            icon: const Icon(Icons.add),
-            label: const Text('إضافة بنر جديد'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          leading: adminAppBarLeading(context),
+          title: const Text('إدارة البنرات الإعلانية'),
+          backgroundColor: AppColors.background,
+          elevation: 0,
+          scrolledUnderElevation: 0,
+          actions: [
+            FilledButton.icon(
+              onPressed: () => _showAddBannerDialog(context, ref),
+              icon: const Icon(Icons.add_rounded, size: 20),
+              label: const Text('إضافة بنر جديد'),
             ),
-          ),
-          const SizedBox(width: 16),
-        ],
-      ),
-      body: bannersAsync.when(
+            const SizedBox(width: 16),
+          ],
+        ),
+        body: AdminPageBody(
+          child: bannersAsync.when(
         data: (banners) {
           if (banners.isEmpty) {
             return const Center(child: Text('لا توجد بنرات حالياً'));
           }
           return ListView.builder(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.zero,
             itemCount: banners.length,
             itemBuilder: (context, index) {
               final banner = banners[index];
-              return Card(
-                margin: const EdgeInsets.only(bottom: 16),
-                child: ListTile(
+              return Padding(
+                padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                child: AdminCard(
+                  padding: EdgeInsets.zero,
+                  child: ListTile(
                   contentPadding: const EdgeInsets.all(16),
                   leading: ClipRRect(
                     borderRadius: BorderRadius.circular(8),
@@ -91,13 +96,16 @@ class BannersScreen extends ConsumerWidget {
                     ],
                   ),
                 ),
+                ),
               );
             },
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (err, stack) => Center(child: Text('خطأ: $err')),
+        ),
       ),
+    ),
     );
   }
 
@@ -353,7 +361,8 @@ class _BannerFormDialogState extends ConsumerState<BannerFormDialog> {
           );
     }
 
-    if (context.mounted) Navigator.pop(context);
+    if (!mounted) return;
+    Navigator.pop(context);
   }
 
   Future<Uint8List?> _bytesFromPlatformFile(PlatformFile pf) async {

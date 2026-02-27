@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared/shared.dart';
 import 'data/admin_users_repository.dart';
 import 'data/admin_user_model.dart';
 import 'presentation/admin_users_providers.dart';
-import '../../core/constants/admin_breakpoints.dart';
 import '../../core/widgets/admin_widgets.dart';
 
 class UsersScreen extends ConsumerWidget {
@@ -13,14 +11,16 @@ class UsersScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isMobile = AdminBreakpoints.isMobile(context);
-    final padding = EdgeInsets.all(isMobile ? AppSpacing.md : AppSpacing.lg);
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
+        backgroundColor: AppColors.background,
         appBar: AppBar(
           leading: adminAppBarLeading(context),
           title: const Text('المستخدمون'),
+          backgroundColor: AppColors.background,
+          elevation: 0,
+          scrolledUnderElevation: 0,
           actions: [
             IconButton(
               icon: const Icon(Icons.refresh_rounded),
@@ -29,79 +29,28 @@ class UsersScreen extends ConsumerWidget {
             ),
           ],
         ),
-        body: Padding(
-          padding: padding,
+        body: AdminPageBody(
           child: ref.watch(adminUsersProvider).when(
-                data: (users) {
-                  if (isMobile) {
-                    return _UsersMobileList(users: users, ref: ref);
-                  }
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const AdminSectionHeader(
-                        title: 'المستخدمون',
-                        subtitle: 'جميع المستخدمين المسجلين في التطبيق',
-                      ),
-                      const SizedBox(height: AppSpacing.md),
-                      Expanded(
-                        child: AdminCard(
-                          child: SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: DataTable2(
-                              columns: const [
-                                DataColumn(label: Text('الاسم')),
-                                DataColumn(label: Text('البريد')),
-                                DataColumn(label: Text('الدور')),
-                                DataColumn(label: Text('التسجيل')),
-                                DataColumn(label: Text('الاشتراك')),
-                                DataColumn(label: Text('إجراءات')),
-                              ],
-                              rows: users
-                                  .map(
-                                    (user) => DataRow(
-                                      cells: [
-                                        DataCell(Text(user.name)),
-                                        DataCell(Text(user.email)),
-                                        DataCell(Text(user.role)),
-                                        DataCell(Text(
-                                          '${user.createdAt.day}/${user.createdAt.month}/${user.createdAt.year}',
-                                        )),
-                                        DataCell(Text(
-                                          user.isSubscribed ? 'نعم' : 'لا',
-                                          style: TextStyle(
-                                            color: user.isSubscribed
-                                                ? Colors.green.shade700
-                                                : null,
-                                            fontWeight: user.isSubscribed
-                                                ? FontWeight.w600
-                                                : null,
-                                          ),
-                                        )),
-                                        DataCell(
-                                          _SubscriptionActionButtons(
-                                            user: user,
-                                            onDone: () =>
-                                                ref.invalidate(adminUsersProvider),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  )
-                                  .toList(),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  );
-                },
+                data: (users) => _UsersList(users: users, ref: ref),
                 loading: () =>
                     const Center(child: CircularProgressIndicator()),
                 error: (e, _) => Center(
                   child: Padding(
                     padding: const EdgeInsets.all(AppSpacing.lg),
-                    child: Text('تعذر تحميل المستخدمين: $e'),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text('تعذر تحميل المستخدمين', style: Theme.of(context).textTheme.titleMedium),
+                        const SizedBox(height: 8),
+                        Text('$e', style: Theme.of(context).textTheme.bodySmall, textAlign: TextAlign.center),
+                        const SizedBox(height: 16),
+                        TextButton.icon(
+                          onPressed: () => ref.invalidate(adminUsersProvider),
+                          icon: const Icon(Icons.refresh),
+                          label: const Text('إعادة المحاولة'),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -111,8 +60,9 @@ class UsersScreen extends ConsumerWidget {
   }
 }
 
-class _UsersMobileList extends StatelessWidget {
-  const _UsersMobileList({required this.users, required this.ref});
+/// قائمة المستخدمين — تعمل على الكمبيوتر والموبايل بدون DataTable
+class _UsersList extends StatelessWidget {
+  const _UsersList({required this.users, required this.ref});
 
   final List<AdminUser> users;
   final WidgetRef ref;
@@ -127,77 +77,82 @@ class _UsersMobileList extends StatelessWidget {
           subtitle: 'جميع المستخدمين المسجلين في التطبيق',
         ),
         const SizedBox(height: AppSpacing.md),
-        Expanded(
-          child: ListView.builder(
-            itemCount: users.length,
-            itemBuilder: (context, i) {
-              final user = users[i];
-              return Padding(
-                padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                child: AdminCard(
-                  padding: const EdgeInsets.all(AppSpacing.md),
-                  child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Row(
+        if (users.isEmpty)
+          const Expanded(
+            child: Center(child: Text('لا يوجد مستخدمون مسجلون حالياً')),
+          )
+        else
+          Expanded(
+            child: ListView.builder(
+              itemCount: users.length,
+              itemBuilder: (context, i) {
+                final user = users[i];
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                  child: AdminCard(
+                    padding: const EdgeInsets.all(AppSpacing.md),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Expanded(
-                          child: Text(
-                            user.name,
-                            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                              fontWeight: FontWeight.w600,
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                user.name,
+                                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
                             ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: AppSpacing.sm,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: user.isSubscribed
+                                    ? Colors.green.withValues(alpha: 0.15)
+                                    : Colors.grey.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(AppRadius.sm),
+                              ),
+                              child: Text(
+                                user.isSubscribed ? 'مشترك' : 'غير مشترك',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: user.isSubscribed
+                                      ? Colors.green.shade700
+                                      : Colors.grey.shade700,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: AppSpacing.xs),
+                        Text(
+                          user.email,
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: AppColors.textMuted,
                           ),
                         ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: AppSpacing.sm,
-                            vertical: 2,
+                        Text(
+                          '${user.role} • ${user.createdAt.day}/${user.createdAt.month}/${user.createdAt.year}',
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: AppColors.textMuted,
                           ),
-                          decoration: BoxDecoration(
-                            color: user.isSubscribed
-                                ? Colors.green.withValues(alpha: 0.15)
-                                : Colors.grey.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(AppRadius.sm),
-                          ),
-                          child: Text(
-                            user.isSubscribed ? 'مشترك' : 'غير مشترك',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: user.isSubscribed
-                                  ? Colors.green.shade700
-                                  : Colors.grey.shade700,
-                            ),
-                          ),
+                        ),
+                        const SizedBox(height: AppSpacing.sm),
+                        _SubscriptionActionButtons(
+                          user: user,
+                          onDone: () => ref.invalidate(adminUsersProvider),
                         ),
                       ],
                     ),
-                    const SizedBox(height: AppSpacing.xs),
-                    Text(
-                      user.email,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.textMuted,
-                      ),
-                    ),
-                    Text(
-                      '${user.role} • ${user.createdAt.day}/${user.createdAt.month}/${user.createdAt.year}',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.textMuted,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.sm),
-                    _SubscriptionActionButtons(
-                      user: user,
-                      onDone: () => ref.invalidate(adminUsersProvider),
-                    ),
-                  ],
-                ),
-              ),
-            );
-            },
+                  ),
+                );
+              },
+            ),
           ),
-        ),
       ],
     );
   }

@@ -7,18 +7,23 @@ import '../../app/di.dart';
 import '../../core/widgets/admin_widgets.dart';
 
 String _authErrorMessage(dynamic e) {
+  final msg = e.toString().toLowerCase();
+  final is404 = msg.contains('404') || (e is AuthException && e.statusCode == '404');
+  if (is404) {
+    return 'الخادم غير متاح (404). تحقق من أن SUPABASE_URL في ملف .env صحيح وأن مشروع Supabase يعمل في اللوحة.';
+  }
   if (e is AuthException) {
-    final msg = e.message.toLowerCase();
-    if (msg.contains('invalid') || msg.contains('credentials')) {
+    final authMsg = e.message.toLowerCase();
+    if (authMsg.contains('invalid') || authMsg.contains('credentials')) {
       return 'البريد الإلكتروني أو كلمة المرور غير صحيحة.';
     }
-    if (msg.contains('confirm') || msg.contains('verified')) {
+    if (authMsg.contains('confirm') || authMsg.contains('verified')) {
       return 'يجب تأكيد البريد أولاً من الرابط المرسل إلى بريدك.';
     }
-    if (msg.contains('already') || msg.contains('registered')) {
+    if (authMsg.contains('already') || authMsg.contains('registered')) {
       return 'هذا البريد مسجّل مسبقاً. جرّب تسجيل الدخول.';
     }
-    if (msg.contains('email')) return 'تحقق من البريد الإلكتروني.';
+    if (authMsg.contains('email')) return 'تحقق من البريد الإلكتروني.';
     return e.message.isNotEmpty ? e.message : 'تعذر تنفيذ العملية.';
   }
   return e.toString();
@@ -70,9 +75,11 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
     if (email.isEmpty || password.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('أدخل البريد وكلمة المرور')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('أدخل البريد وكلمة المرور')),
+        );
+      }
       return;
     }
     setState(() => _loading = true);
@@ -81,7 +88,8 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
             email: email,
             password: password,
           );
-      if (mounted) context.go('/dashboard');
+      if (!mounted) return;
+      context.go('/dashboard');
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -100,31 +108,43 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
     if (email.isEmpty || password.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('أدخل البريد وكلمة المرور')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('أدخل البريد وكلمة المرور')),
+        );
+      }
       return;
     }
     if (password.length < 6) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('كلمة المرور 6 أحرف على الأقل')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('كلمة المرور 6 أحرف على الأقل')),
+        );
+      }
       return;
     }
     setState(() => _loading = true);
     try {
-      await ref.read(supabaseClientProvider).auth.signUp(
+      final response = await ref.read(supabaseClientProvider).auth.signUp(
             email: email,
             password: password,
             data: {'name': name.isEmpty ? 'أدمن' : name},
           );
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('تم إنشاء الحساب. يمكنك تسجيل الدخول الآن.'),
-        ),
-      );
-      setState(() => _isSignUp = false);
+      if (response.session != null) {
+        context.go('/dashboard');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('تم إنشاء الحساب وتسجيل الدخول.')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('تم إنشاء الحساب. راجع بريدك لتأكيد الرابط ثم سجّل الدخول.'),
+            duration: Duration(seconds: 5),
+          ),
+        );
+        setState(() => _isSignUp = false);
+      }
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(

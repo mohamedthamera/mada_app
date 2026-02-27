@@ -2,6 +2,7 @@ import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared/shared.dart';
+import '../../core/constants/admin_breakpoints.dart';
 import '../../core/widgets/admin_widgets.dart';
 import 'data/admin_jobs_repository.dart';
 import 'presentation/admin_jobs_providers.dart';
@@ -14,22 +15,33 @@ class AdminJobsScreen extends ConsumerWidget {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
+        backgroundColor: AppColors.background,
         appBar: AppBar(
           leading: adminAppBarLeading(context),
           title: const Text('إدارة الوظائف'),
+          backgroundColor: AppColors.background,
+          elevation: 0,
+          scrolledUnderElevation: 0,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.refresh_rounded),
+              onPressed: () => ref.invalidate(adminJobsProvider),
+              tooltip: 'تحديث',
+            ),
+          ],
         ),
-        body: Padding(
-          padding: const EdgeInsets.all(AppSpacing.lg),
+        body: AdminPageBody(
           child: Column(
             children: [
               AdminSectionHeader(
                 title: 'الوظائف',
-                trailing: ElevatedButton(
+                subtitle: 'إضافة وتعديل وحذف الوظائف',
+                trailing: FilledButton.icon(
                   onPressed: () => _showAddJobDialog(context, ref),
-                  child: const Text('إضافة وظيفة'),
+                  icon: const Icon(Icons.add_rounded, size: 20),
+                  label: const Text('إضافة وظيفة'),
                 ),
               ),
-              const SizedBox(height: AppSpacing.md),
               Expanded(
                 child: AdminCard(
                   child: ref.watch(adminJobsProvider).when(
@@ -132,132 +144,162 @@ class AdminJobsScreen extends ConsumerWidget {
 
     showDialog<void>(
       context: context,
-      builder: (ctx) => Directionality(
-        textDirection: TextDirection.rtl,
-        child: AlertDialog(
-          title: const Text('إضافة وظيفة جديدة'),
-          content: SizedBox(
-            width: 420,
-            child: Form(
-              key: formKey,
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    TextFormField(
-                      controller: titleAr,
-                      decoration: const InputDecoration(
-                        labelText: 'المسمى الوظيفي *',
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setState) => Directionality(
+          textDirection: TextDirection.rtl,
+          child: AlertDialog(
+            title: const Text('إضافة وظيفة جديدة'),
+            content: SizedBox(
+              width: AdminBreakpoints.isMobile(context) ? null : 440,
+              child: Form(
+                key: formKey,
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      AdminFormSection(
+                        title: 'البيانات الأساسية',
+                        icon: Icons.work_outline_rounded,
+                        children: [
+                          TextFormField(
+                            controller: titleAr,
+                            decoration: const InputDecoration(
+                              labelText: 'المسمى الوظيفي *',
+                              isDense: true,
+                            ),
+                            validator: (v) =>
+                                v == null || v.isEmpty ? 'مطلوب' : null,
+                          ),
+                          const SizedBox(height: adminFormFieldSpacing),
+                          TextFormField(
+                            controller: company,
+                            decoration: const InputDecoration(
+                              labelText: 'اسم الشركة *',
+                              isDense: true,
+                            ),
+                            validator: (v) =>
+                                v == null || v.isEmpty ? 'مطلوب' : null,
+                          ),
+                          const SizedBox(height: adminFormFieldSpacing),
+                          TextFormField(
+                            controller: location,
+                            decoration: const InputDecoration(
+                              labelText: 'الموقع *',
+                              isDense: true,
+                            ),
+                            validator: (v) =>
+                                v == null || v.isEmpty ? 'مطلوب' : null,
+                          ),
+                          const SizedBox(height: adminFormFieldSpacing),
+                          DropdownButtonFormField<String>(
+                            initialValue: jobType,
+                            decoration: const InputDecoration(
+                              labelText: 'نوع الوظيفة',
+                              isDense: true,
+                            ),
+                            items: const [
+                              DropdownMenuItem(
+                                value: 'full_time',
+                                child: Text('دوام كامل'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'part_time',
+                                child: Text('دوام جزئي'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'internship',
+                                child: Text('تدريب'),
+                              ),
+                            ],
+                            onChanged: (v) =>
+                                setState(() => jobType = v ?? 'full_time'),
+                          ),
+                          const SizedBox(height: adminFormFieldSpacing),
+                          DropdownButtonFormField<String>(
+                            initialValue: workMode,
+                            decoration: const InputDecoration(
+                              labelText: 'طبيعة الدوام',
+                              isDense: true,
+                            ),
+                            items: const [
+                              DropdownMenuItem(
+                                value: 'onsite',
+                                child: Text('حضوري'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'remote',
+                                child: Text('عن بعد'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'hybrid',
+                                child: Text('هجين'),
+                              ),
+                            ],
+                            onChanged: (v) =>
+                                setState(() => workMode = v ?? 'onsite'),
+                          ),
+                        ],
                       ),
-                      validator: (v) =>
-                          v == null || v.isEmpty ? 'مطلوب' : null,
-                    ),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: company,
-                      decoration: const InputDecoration(
-                        labelText: 'اسم الشركة *',
+                      const SizedBox(height: AppSpacing.lg),
+                      AdminFormSection(
+                        title: 'التفاصيل والوصف',
+                        icon: Icons.description_outlined,
+                        children: [
+                          TextFormField(
+                            controller: salary,
+                            decoration: const InputDecoration(
+                              labelText: 'الراتب (اختياري)',
+                              isDense: true,
+                            ),
+                          ),
+                          const SizedBox(height: adminFormFieldSpacing),
+                          TextFormField(
+                            controller: workDays,
+                            decoration: const InputDecoration(
+                              labelText: 'أيام العمل',
+                              hintText: 'مثال: الأحد - الخميس',
+                              isDense: true,
+                            ),
+                          ),
+                          const SizedBox(height: adminFormFieldSpacing),
+                          TextFormField(
+                            controller: descriptionAr,
+                            decoration: const InputDecoration(
+                              labelText: 'الوصف *',
+                              isDense: true,
+                              alignLabelWithHint: true,
+                            ),
+                            maxLines: 3,
+                            validator: (v) =>
+                                v == null || v.isEmpty ? 'مطلوب' : null,
+                          ),
+                          const SizedBox(height: adminFormFieldSpacing),
+                          TextFormField(
+                            controller: requirements,
+                            decoration: const InputDecoration(
+                              labelText: 'المتطلبات (اختياري)',
+                              isDense: true,
+                              alignLabelWithHint: true,
+                            ),
+                            maxLines: 2,
+                          ),
+                          const SizedBox(height: adminFormFieldSpacing),
+                          TextFormField(
+                            controller: applyUrl,
+                            decoration: const InputDecoration(
+                              labelText: 'رابط التقديم (اختياري)',
+                              hintText: 'https://...',
+                              isDense: true,
+                            ),
+                          ),
+                        ],
                       ),
-                      validator: (v) =>
-                          v == null || v.isEmpty ? 'مطلوب' : null,
-                    ),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: location,
-                      decoration: const InputDecoration(
-                        labelText: 'الموقع *',
-                      ),
-                      validator: (v) =>
-                          v == null || v.isEmpty ? 'مطلوب' : null,
-                    ),
-                    const SizedBox(height: 12),
-                    DropdownButtonFormField<String>(
-                      initialValue: jobType,
-                      decoration: const InputDecoration(
-                        labelText: 'نوع الوظيفة *',
-                      ),
-                      items: const [
-                        DropdownMenuItem(
-                          value: 'full_time',
-                          child: Text('دوام كامل'),
-                        ),
-                        DropdownMenuItem(
-                          value: 'part_time',
-                          child: Text('دوام جزئي'),
-                        ),
-                        DropdownMenuItem(
-                          value: 'internship',
-                          child: Text('تدريب'),
-                        ),
-                      ],
-                      onChanged: (v) => jobType = v ?? 'full_time',
-                    ),
-                    const SizedBox(height: 12),
-                    DropdownButtonFormField<String>(
-                      initialValue: workMode,
-                      decoration: const InputDecoration(
-                        labelText: 'طبيعة الدوام *',
-                      ),
-                      items: const [
-                        DropdownMenuItem(
-                          value: 'onsite',
-                          child: Text('حضوري'),
-                        ),
-                        DropdownMenuItem(
-                          value: 'remote',
-                          child: Text('عن بعد'),
-                        ),
-                        DropdownMenuItem(
-                          value: 'hybrid',
-                          child: Text('هجين'),
-                        ),
-                      ],
-                      onChanged: (v) => workMode = v ?? 'onsite',
-                    ),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: salary,
-                      decoration: const InputDecoration(
-                        labelText: 'الراتب (اختياري)',
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: workDays,
-                      decoration: const InputDecoration(
-                        labelText: 'أيام العمل (مثال: الأحد - الخميس)',
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: descriptionAr,
-                      decoration: const InputDecoration(
-                        labelText: 'الوصف (عربي) *',
-                      ),
-                      maxLines: 3,
-                      validator: (v) =>
-                          v == null || v.isEmpty ? 'مطلوب' : null,
-                    ),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: requirements,
-                      decoration: const InputDecoration(
-                        labelText: 'المتطلبات والخبرات (اختياري)',
-                      ),
-                      maxLines: 3,
-                    ),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: applyUrl,
-                      decoration: const InputDecoration(
-                        labelText: 'رابط التقديم (اختياري)',
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(ctx).pop(),
@@ -309,7 +351,8 @@ class AdminJobsScreen extends ConsumerWidget {
           ],
         ),
       ),
-    );
+    ),
+  );
   }
 
   void _showEditJobDialog(
@@ -340,182 +383,211 @@ class AdminJobsScreen extends ConsumerWidget {
 
     showDialog<void>(
       context: context,
-      builder: (ctx) => Directionality(
-        textDirection: TextDirection.rtl,
-        child: AlertDialog(
-          title: const Text('تعديل وظيفة'),
-          content: SizedBox(
-            width: 420,
-            child: Form(
-              key: formKey,
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    TextFormField(
-                      controller: titleAr,
-                      decoration: const InputDecoration(
-                        labelText: 'المسمى الوظيفي *',
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setState) => Directionality(
+          textDirection: TextDirection.rtl,
+          child: AlertDialog(
+            title: const Text('تعديل وظيفة'),
+            content: SizedBox(
+              width: AdminBreakpoints.isMobile(context) ? null : 440,
+              child: Form(
+                key: formKey,
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      AdminFormSection(
+                        title: 'البيانات الأساسية',
+                        icon: Icons.work_outline_rounded,
+                        children: [
+                          TextFormField(
+                            controller: titleAr,
+                            decoration: const InputDecoration(
+                              labelText: 'المسمى الوظيفي *',
+                              isDense: true,
+                            ),
+                            validator: (v) =>
+                                v == null || v.isEmpty ? 'مطلوب' : null,
+                          ),
+                          const SizedBox(height: adminFormFieldSpacing),
+                          TextFormField(
+                            controller: company,
+                            decoration: const InputDecoration(
+                              labelText: 'اسم الشركة *',
+                              isDense: true,
+                            ),
+                            validator: (v) =>
+                                v == null || v.isEmpty ? 'مطلوب' : null,
+                          ),
+                          const SizedBox(height: adminFormFieldSpacing),
+                          TextFormField(
+                            controller: location,
+                            decoration: const InputDecoration(
+                              labelText: 'الموقع *',
+                              isDense: true,
+                            ),
+                            validator: (v) =>
+                                v == null || v.isEmpty ? 'مطلوب' : null,
+                          ),
+                          const SizedBox(height: adminFormFieldSpacing),
+                          DropdownButtonFormField<String>(
+                            initialValue: jobType,
+                            decoration: const InputDecoration(
+                              labelText: 'نوع الوظيفة',
+                              isDense: true,
+                            ),
+                            items: const [
+                              DropdownMenuItem(
+                                value: 'full_time',
+                                child: Text('دوام كامل'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'part_time',
+                                child: Text('دوام جزئي'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'internship',
+                                child: Text('تدريب'),
+                              ),
+                            ],
+                            onChanged: (v) =>
+                                setState(() => jobType = v ?? 'full_time'),
+                          ),
+                          const SizedBox(height: adminFormFieldSpacing),
+                          DropdownButtonFormField<String>(
+                            initialValue: workMode,
+                            decoration: const InputDecoration(
+                              labelText: 'طبيعة الدوام',
+                              isDense: true,
+                            ),
+                            items: const [
+                              DropdownMenuItem(
+                                value: 'onsite',
+                                child: Text('حضوري'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'remote',
+                                child: Text('عن بعد'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'hybrid',
+                                child: Text('هجين'),
+                              ),
+                            ],
+                            onChanged: (v) =>
+                                setState(() => workMode = v ?? 'onsite'),
+                          ),
+                        ],
                       ),
-                      validator: (v) =>
-                          v == null || v.isEmpty ? 'مطلوب' : null,
-                    ),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: company,
-                      decoration: const InputDecoration(
-                        labelText: 'اسم الشركة *',
+                      const SizedBox(height: AppSpacing.lg),
+                      AdminFormSection(
+                        title: 'التفاصيل والوصف',
+                        icon: Icons.description_outlined,
+                        children: [
+                          TextFormField(
+                            controller: salary,
+                            decoration: const InputDecoration(
+                              labelText: 'الراتب (اختياري)',
+                              isDense: true,
+                            ),
+                          ),
+                          const SizedBox(height: adminFormFieldSpacing),
+                          TextFormField(
+                            controller: workDays,
+                            decoration: const InputDecoration(
+                              labelText: 'أيام العمل',
+                              isDense: true,
+                            ),
+                          ),
+                          const SizedBox(height: adminFormFieldSpacing),
+                          TextFormField(
+                            controller: descriptionAr,
+                            decoration: const InputDecoration(
+                              labelText: 'الوصف *',
+                              isDense: true,
+                              alignLabelWithHint: true,
+                            ),
+                            maxLines: 3,
+                            validator: (v) =>
+                                v == null || v.isEmpty ? 'مطلوب' : null,
+                          ),
+                          const SizedBox(height: adminFormFieldSpacing),
+                          TextFormField(
+                            controller: requirements,
+                            decoration: const InputDecoration(
+                              labelText: 'المتطلبات (اختياري)',
+                              isDense: true,
+                              alignLabelWithHint: true,
+                            ),
+                            maxLines: 2,
+                          ),
+                          const SizedBox(height: adminFormFieldSpacing),
+                          TextFormField(
+                            controller: applyUrl,
+                            decoration: const InputDecoration(
+                              labelText: 'رابط التقديم (اختياري)',
+                              isDense: true,
+                            ),
+                          ),
+                        ],
                       ),
-                      validator: (v) =>
-                          v == null || v.isEmpty ? 'مطلوب' : null,
-                    ),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: location,
-                      decoration: const InputDecoration(
-                        labelText: 'الموقع *',
-                      ),
-                      validator: (v) =>
-                          v == null || v.isEmpty ? 'مطلوب' : null,
-                    ),
-                    const SizedBox(height: 12),
-                    DropdownButtonFormField<String>(
-                      initialValue: jobType,
-                      decoration: const InputDecoration(
-                        labelText: 'نوع الوظيفة *',
-                      ),
-                      items: const [
-                        DropdownMenuItem(
-                          value: 'full_time',
-                          child: Text('دوام كامل'),
-                        ),
-                        DropdownMenuItem(
-                          value: 'part_time',
-                          child: Text('دوام جزئي'),
-                        ),
-                        DropdownMenuItem(
-                          value: 'internship',
-                          child: Text('تدريب'),
-                        ),
-                      ],
-                      onChanged: (v) => jobType = v ?? 'full_time',
-                    ),
-                    const SizedBox(height: 12),
-                    DropdownButtonFormField<String>(
-                      initialValue: workMode,
-                      decoration: const InputDecoration(
-                        labelText: 'طبيعة الدوام *',
-                      ),
-                      items: const [
-                        DropdownMenuItem(
-                          value: 'onsite',
-                          child: Text('حضوري'),
-                        ),
-                        DropdownMenuItem(
-                          value: 'remote',
-                          child: Text('عن بعد'),
-                        ),
-                        DropdownMenuItem(
-                          value: 'hybrid',
-                          child: Text('هجين'),
-                        ),
-                      ],
-                      onChanged: (v) => workMode = v ?? 'onsite',
-                    ),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: salary,
-                      decoration: const InputDecoration(
-                        labelText: 'الراتب (اختياري)',
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: workDays,
-                      decoration: const InputDecoration(
-                        labelText: 'أيام العمل (مثال: الأحد - الخميس)',
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: descriptionAr,
-                      decoration: const InputDecoration(
-                        labelText: 'الوصف (عربي) *',
-                      ),
-                      maxLines: 3,
-                      validator: (v) =>
-                          v == null || v.isEmpty ? 'مطلوب' : null,
-                    ),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: requirements,
-                      decoration: const InputDecoration(
-                        labelText: 'المتطلبات والخبرات (اختياري)',
-                      ),
-                      maxLines: 3,
-                    ),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: applyUrl,
-                      decoration: const InputDecoration(
-                        labelText: 'رابط التقديم (اختياري)',
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(),
-              child: const Text('إلغاء'),
-            ),
-            FilledButton(
-              onPressed: () async {
-                if (!formKey.currentState!.validate()) return;
-                try {
-                  await ref.read(adminJobsRepositoryProvider).updateJob(
-                        id: job['id'] as String,
-                        titleAr: titleAr.text.trim(),
-                        companyName: company.text.trim(),
-                        location: location.text.trim(),
-                        jobType: jobType,
-                        descriptionAr: descriptionAr.text.trim(),
-                        salary: salary.text.trim().isEmpty
-                            ? null
-                            : salary.text.trim(),
-                        workMode: workMode,
-                        workDays: workDays.text.trim().isEmpty
-                            ? null
-                            : workDays.text.trim(),
-                        requirements: requirements.text.trim().isEmpty
-                            ? null
-                            : requirements.text.trim(),
-                        applyUrl: applyUrl.text.trim().isEmpty
-                            ? null
-                            : applyUrl.text.trim(),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(),
+                child: const Text('إلغاء'),
+              ),
+              FilledButton(
+                onPressed: () async {
+                  if (!formKey.currentState!.validate()) return;
+                  try {
+                    await ref.read(adminJobsRepositoryProvider).updateJob(
+                          id: job['id'] as String,
+                          titleAr: titleAr.text.trim(),
+                          companyName: company.text.trim(),
+                          location: location.text.trim(),
+                          jobType: jobType,
+                          descriptionAr: descriptionAr.text.trim(),
+                          salary: salary.text.trim().isEmpty
+                              ? null
+                              : salary.text.trim(),
+                          workMode: workMode,
+                          workDays: workDays.text.trim().isEmpty
+                              ? null
+                              : workDays.text.trim(),
+                          requirements: requirements.text.trim().isEmpty
+                              ? null
+                              : requirements.text.trim(),
+                          applyUrl: applyUrl.text.trim().isEmpty
+                              ? null
+                              : applyUrl.text.trim(),
+                        );
+                    if (ctx.mounted) Navigator.of(ctx).pop();
+                    ref.invalidate(adminJobsProvider);
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('تم تحديث الوظيفة بنجاح'),
+                        ),
                       );
-                  if (ctx.mounted) Navigator.of(ctx).pop();
-                  ref.invalidate(adminJobsProvider);
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('تم تحديث الوظيفة بنجاح'),
-                      ),
-                    );
+                    }
+                  } catch (e) {
+                    if (ctx.mounted) {
+                      ScaffoldMessenger.of(ctx).showSnackBar(
+                        SnackBar(content: Text('خطأ: $e')),
+                      );
+                    }
                   }
-                } catch (e) {
-                  if (ctx.mounted) {
-                    ScaffoldMessenger.of(ctx).showSnackBar(
-                      SnackBar(content: Text('خطأ: $e')),
-                    );
-                  }
-                }
-              },
-              child: const Text('حفظ'),
-            ),
-          ],
+                },
+                child: const Text('حفظ'),
+              ),
+            ],
+          ),
         ),
       ),
     );

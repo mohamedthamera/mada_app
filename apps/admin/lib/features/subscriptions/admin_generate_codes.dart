@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared/shared.dart';
 
-// ignore: deprecated_member_use
+// ignore: deprecated_member_use, avoid_web_libraries_in_flutter
 import 'dart:html' if (dart.library.io) 'admin_generate_codes_stub.dart' as html;
 
 class AdminGenerateCodes extends StatefulWidget {

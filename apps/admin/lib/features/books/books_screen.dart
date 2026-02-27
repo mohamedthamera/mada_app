@@ -1,4 +1,3 @@
-import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -42,13 +41,16 @@ class _AdminBooksScreenState extends ConsumerState<AdminBooksScreen> {
   @override
   Widget build(BuildContext context) {
     final isMobile = AdminBreakpoints.isMobile(context);
-    final padding = EdgeInsets.all(isMobile ? AppSpacing.md : AppSpacing.lg);
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
+        backgroundColor: AppColors.background,
         appBar: AppBar(
           leading: adminAppBarLeading(context),
           title: const Text('إدارة الكتب'),
+          backgroundColor: AppColors.background,
+          elevation: 0,
+          scrolledUnderElevation: 0,
           actions: [
             IconButton(
               icon: const Icon(Icons.refresh_rounded),
@@ -58,14 +60,13 @@ class _AdminBooksScreenState extends ConsumerState<AdminBooksScreen> {
             const SizedBox(width: 8),
             FilledButton.icon(
               onPressed: () => _showBookDialog(context, ref),
-              icon: const Icon(Icons.add),
+              icon: const Icon(Icons.add_rounded, size: 20),
               label: const Text('إضافة كتاب'),
             ),
             const SizedBox(width: 16),
           ],
         ),
-        body: Padding(
-          padding: padding,
+        body: AdminPageBody(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -73,7 +74,6 @@ class _AdminBooksScreenState extends ConsumerState<AdminBooksScreen> {
                 title: 'الكتب',
                 subtitle: 'إدارة كتب التطبيق (PDF / EPUB)',
               ),
-              const SizedBox(height: AppSpacing.md),
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
@@ -101,7 +101,6 @@ class _AdminBooksScreenState extends ConsumerState<AdminBooksScreen> {
                   ),
                 ],
               ),
-              const SizedBox(height: AppSpacing.md),
               Expanded(
                 child: ref.watch(adminBooksProvider).when(
                       data: (books) {
@@ -278,6 +277,7 @@ class _AdminBooksScreenState extends ConsumerState<AdminBooksScreen> {
 }
 
 class _AdminBookCoverThumbnail extends ConsumerWidget {
+  // ignore: unused_element_parameter - optional size used in build, callers use defaults
   const _AdminBookCoverThumbnail({required this.book, this.width = 40, this.height = 56});
 
   final Book book;
@@ -418,11 +418,13 @@ class _BookFormDialogState extends ConsumerState<_BookFormDialog> {
       final bytes = result.files.single.bytes!;
       final name = result.files.single.name;
       final path = await repo.uploadCover(bytes, name);
-      if (mounted) setState(() {
-        _coverPath = path;
-        _coverFileName = name;
-        _uploading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _coverPath = path;
+          _coverFileName = name;
+          _uploading = false;
+        });
+      }
     } catch (e) {
       if (mounted) {
         setState(() => _uploading = false);
@@ -439,7 +441,9 @@ class _BookFormDialogState extends ConsumerState<_BookFormDialog> {
     if (result == null || result.files.single.bytes == null) return;
     final ext = result.files.single.extension?.toLowerCase();
     if (ext != 'pdf' && ext != 'epub') {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('الملف يجب أن يكون PDF أو EPUB')));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('الملف يجب أن يكون PDF أو EPUB')));
+      }
       return;
     }
     setState(() => _uploading = true);
@@ -448,13 +452,15 @@ class _BookFormDialogState extends ConsumerState<_BookFormDialog> {
       final bytes = result.files.single.bytes!;
       final name = result.files.single.name;
       final path = await repo.uploadFile(bytes, name);
-      if (mounted) setState(() {
-        _filePath = path;
-        _fileFileName = name;
-        _fileType = ext ?? 'pdf';
-        _fileSizeBytes = bytes.length;
-        _uploading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _filePath = path;
+          _fileFileName = name;
+          _fileType = ext ?? 'pdf';
+          _fileSizeBytes = bytes.length;
+          _uploading = false;
+        });
+      }
     } catch (e) {
       if (mounted) {
         setState(() => _uploading = false);
@@ -523,96 +529,131 @@ class _BookFormDialogState extends ConsumerState<_BookFormDialog> {
       child: AlertDialog(
         title: Text(widget.existing != null ? 'تعديل الكتاب' : 'إضافة كتاب'),
         content: SizedBox(
-          width: 420,
+          width: 440,
           child: Form(
             key: _formKey,
             child: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  TextFormField(
-                    controller: _titleController,
-                    decoration: const InputDecoration(labelText: 'العنوان *'),
-                    validator: (v) => v == null || v.trim().isEmpty ? 'مطلوب' : null,
-                  ),
-                  const SizedBox(height: 12),
-                  TextFormField(
-                    controller: _authorController,
-                    decoration: const InputDecoration(labelText: 'المؤلف'),
-                  ),
-                  const SizedBox(height: 12),
-                  TextFormField(
-                    controller: _categoryController,
-                    decoration: const InputDecoration(labelText: 'التصنيف'),
-                  ),
-                  const SizedBox(height: 12),
-                  TextFormField(
-                    controller: _languageController,
-                    decoration: const InputDecoration(labelText: 'اللغة'),
-                  ),
-                  const SizedBox(height: 12),
-                  TextFormField(
-                    controller: _pagesController,
-                    decoration: const InputDecoration(labelText: 'عدد الصفحات'),
-                    keyboardType: TextInputType.number,
-                  ),
-                  const SizedBox(height: 12),
-                  TextFormField(
-                    controller: _descController,
-                    decoration: const InputDecoration(labelText: 'الوصف'),
-                    maxLines: 3,
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
+                  AdminFormSection(
+                    title: 'معلومات الكتاب',
+                    icon: Icons.menu_book_rounded,
                     children: [
-                      OutlinedButton.icon(
-                        onPressed: _uploading ? null : _pickAndUploadCover,
-                        icon: const Icon(Icons.image),
-                        label: Text(_coverFileName ?? 'رفع غلاف'),
+                      TextFormField(
+                        controller: _titleController,
+                        decoration: const InputDecoration(
+                          labelText: 'العنوان *',
+                          isDense: true,
+                        ),
+                        validator: (v) => v == null || v.trim().isEmpty ? 'مطلوب' : null,
                       ),
-                      const SizedBox(width: 8),
-                      if (_coverPath != null) const Icon(Icons.check_circle, color: Colors.green, size: 20),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      OutlinedButton.icon(
-                        onPressed: _uploading ? null : _pickAndUploadFile,
-                        icon: const Icon(Icons.upload_file),
-                        label: Text(_fileFileName ?? 'رفع ملف PDF/EPUB *'),
+                      const SizedBox(height: adminFormFieldSpacing),
+                      TextFormField(
+                        controller: _authorController,
+                        decoration: const InputDecoration(labelText: 'المؤلف', isDense: true),
                       ),
-                      const SizedBox(width: 8),
-                      if (_filePath != null) Text('$_fileType • ${_fileSizeBytes != null ? "${(_fileSizeBytes! / 1024).toStringAsFixed(1)} KB" : ""}', style: const TextStyle(fontSize: 12)),
+                      const SizedBox(height: adminFormFieldSpacing),
+                      TextFormField(
+                        controller: _categoryController,
+                        decoration: const InputDecoration(labelText: 'التصنيف', isDense: true),
+                      ),
+                      const SizedBox(height: adminFormFieldSpacing),
+                      TextFormField(
+                        controller: _languageController,
+                        decoration: const InputDecoration(labelText: 'اللغة', isDense: true),
+                      ),
+                      const SizedBox(height: adminFormFieldSpacing),
+                      TextFormField(
+                        controller: _pagesController,
+                        decoration: const InputDecoration(labelText: 'عدد الصفحات', isDense: true),
+                        keyboardType: TextInputType.number,
+                      ),
+                      const SizedBox(height: adminFormFieldSpacing),
+                      TextFormField(
+                        controller: _descController,
+                        decoration: const InputDecoration(
+                          labelText: 'الوصف',
+                          isDense: true,
+                          alignLabelWithHint: true,
+                        ),
+                        maxLines: 3,
+                      ),
                     ],
                   ),
-                  if (_uploading) const LinearProgressIndicator(),
-                  const SizedBox(height: 12),
-                  DropdownButtonFormField<String>(
-                    value: _fileType,
-                    decoration: const InputDecoration(labelText: 'نوع الملف'),
-                    items: const [
-                      DropdownMenuItem(value: 'pdf', child: Text('PDF')),
-                      DropdownMenuItem(value: 'epub', child: Text('EPUB')),
-                    ],
-                    onChanged: (v) => setState(() => _fileType = v ?? 'pdf'),
-                  ),
-                  const SizedBox(height: 12),
-                  TextFormField(
-                    controller: _sortOrderController,
-                    decoration: const InputDecoration(labelText: 'ترتيب العرض'),
-                    keyboardType: TextInputType.number,
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
+                  const SizedBox(height: AppSpacing.lg),
+                  AdminFormSection(
+                    title: 'الغلاف والملف',
+                    icon: Icons.upload_file_rounded,
                     children: [
-                      const Text('منشور'),
-                      const SizedBox(width: 8),
-                      Switch(value: _isPublished, onChanged: (v) => setState(() => _isPublished = v)),
-                      const SizedBox(width: 24),
-                      const Text('مميز'),
-                      const SizedBox(width: 8),
-                      Switch(value: _isFeatured, onChanged: (v) => setState(() => _isFeatured = v)),
+                      Row(
+                        children: [
+                          OutlinedButton.icon(
+                            onPressed: _uploading ? null : _pickAndUploadCover,
+                            icon: const Icon(Icons.image_outlined, size: 20),
+                            label: Text(_coverFileName ?? 'رفع غلاف'),
+                          ),
+                          const SizedBox(width: 8),
+                          if (_coverPath != null) const Icon(Icons.check_circle, color: Colors.green, size: 22),
+                        ],
+                      ),
+                      const SizedBox(height: adminFormFieldSpacing),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: _uploading ? null : _pickAndUploadFile,
+                              icon: const Icon(Icons.picture_as_pdf_outlined, size: 20),
+                              label: Text(_fileFileName ?? 'رفع PDF/EPUB *'),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          if (_filePath != null)
+                            Text(
+                              '$_fileType • ${_fileSizeBytes != null ? "${(_fileSizeBytes! / 1024).toStringAsFixed(1)} KB" : ""}',
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                        ],
+                      ),
+                      if (_uploading) const Padding(padding: EdgeInsets.only(top: 8), child: LinearProgressIndicator()),
+                      const SizedBox(height: adminFormFieldSpacing),
+                      DropdownButtonFormField<String>(
+                        initialValue: _fileType,
+                        decoration: const InputDecoration(labelText: 'نوع الملف', isDense: true),
+                        items: const [
+                          DropdownMenuItem(value: 'pdf', child: Text('PDF')),
+                          DropdownMenuItem(value: 'epub', child: Text('EPUB')),
+                        ],
+                        onChanged: (v) => setState(() => _fileType = v ?? 'pdf'),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+                  AdminFormSection(
+                    title: 'العرض والنشر',
+                    icon: Icons.tune_rounded,
+                    children: [
+                      TextFormField(
+                        controller: _sortOrderController,
+                        decoration: const InputDecoration(
+                          labelText: 'ترتيب العرض',
+                          isDense: true,
+                        ),
+                        keyboardType: TextInputType.number,
+                      ),
+                      const SizedBox(height: adminFormFieldSpacing),
+                      Row(
+                        children: [
+                          const Text('منشور'),
+                          const SizedBox(width: 8),
+                          Switch(value: _isPublished, onChanged: (v) => setState(() => _isPublished = v)),
+                          const SizedBox(width: 24),
+                          const Text('مميز'),
+                          const SizedBox(width: 8),
+                          Switch(value: _isFeatured, onChanged: (v) => setState(() => _isFeatured = v)),
+                        ],
+                      ),
                     ],
                   ),
                 ],

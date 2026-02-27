@@ -11,6 +11,7 @@ import 'data/admin_course_repository.dart';
 import 'data/admin_lesson_repository.dart';
 import 'data/video_upload_repository.dart';
 import 'presentation/admin_course_providers.dart';
+import '../../core/constants/admin_breakpoints.dart';
 import '../../core/widgets/admin_widgets.dart';
 
 String _courseLessonError(dynamic e) {
@@ -147,7 +148,7 @@ class CoursesScreen extends ConsumerWidget {
           child: AlertDialog(
             title: const Text('إضافة دورة جديدة'),
             content: SizedBox(
-              width: 460,
+              width: AdminBreakpoints.isMobile(context) ? null : 480,
               child: Form(
                 key: formKey,
                 child: SingleChildScrollView(
@@ -155,154 +156,168 @@ class CoursesScreen extends ConsumerWidget {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      TextFormField(
-                        controller: titleAr,
-                        decoration: const InputDecoration(
-                          labelText: 'العنوان (عربي) *',
-                        ),
-                        validator: (v) =>
-                            v == null || v.isEmpty ? 'مطلوب' : null,
-                      ),
-                      const SizedBox(height: 12),
-                      TextFormField(
-                        controller: titleEn,
-                        decoration: const InputDecoration(
-                          labelText: 'العنوان (إنجليزي) *',
-                        ),
-                        validator: (v) =>
-                            v == null || v.isEmpty ? 'مطلوب' : null,
-                      ),
-                      const SizedBox(height: 12),
-                      TextFormField(
-                        controller: descAr,
-                        decoration: const InputDecoration(
-                          labelText: 'الوصف (عربي) *',
-                        ),
-                        maxLines: 2,
-                        validator: (v) =>
-                            v == null || v.isEmpty ? 'مطلوب' : null,
-                      ),
-                      const SizedBox(height: 12),
-                      TextFormField(
-                        controller: descEn,
-                        decoration: const InputDecoration(
-                          labelText: 'الوصف (إنجليزي) *',
-                        ),
-                        maxLines: 2,
-                        validator: (v) =>
-                            v == null || v.isEmpty ? 'مطلوب' : null,
-                      ),
-                      const SizedBox(height: 12),
-                      const Text('صورة الغلاف', style: TextStyle(fontWeight: FontWeight.w500)),
-                      const SizedBox(height: 6),
-                      Row(
+                      AdminFormSection(
+                        title: 'معلومات الدورة',
+                        icon: Icons.menu_book_rounded,
                         children: [
-                          Expanded(
-                            child: TextFormField(
-                              controller: thumbnailUrl,
-                              decoration: const InputDecoration(
-                                labelText: 'رابط الصورة أو ارفع من الجهاز',
-                                hintText: 'رابط أو اضغط "رفع صورة"',
-                              ),
-                              validator: (v) =>
-                                  v == null || v.isEmpty ? 'مطلوب (رابط أو رفع)' : null,
+                          TextFormField(
+                            controller: titleAr,
+                            decoration: const InputDecoration(
+                              labelText: 'العنوان (عربي) *',
+                              isDense: true,
                             ),
+                            validator: (v) =>
+                                v == null || v.isEmpty ? 'مطلوب' : null,
                           ),
-                          const SizedBox(width: 8),
-                          OutlinedButton.icon(
-                            onPressed: thumbnailUploading
-                                ? null
-                                : () async {
-                                    setDialogState(() => thumbnailUploading = true);
-                                    try {
-                                      final result = await FilePicker.platform.pickFiles(
-                                        type: FileType.image,
-                                        allowMultiple: false,
-                                        withData: true,
-                                      );
-                                      if (result == null ||
-                                          result.files.single.bytes == null) {
-                                        setDialogState(() => thumbnailUploading = false);
-                                        return;
-                                      }
-                                      final file = result.files.single;
-                                      final bytes = Uint8List.fromList(file.bytes!);
-                                      final name = file.name.isEmpty ? 'cover.jpg' : file.name;
-                                      final url = await ref
-                                          .read(videoUploadRepositoryProvider)
-                                          .uploadThumbnail(bytes: bytes, fileName: name);
-                                      thumbnailUrl.text = url;
-                                      setDialogState(() {
-                                        thumbnailUploadedName = name;
-                                        thumbnailUploading = false;
-                                      });
-                                    } catch (e) {
-                                      setDialogState(() => thumbnailUploading = false);
-                                      if (ctx.mounted) {
-                                        ScaffoldMessenger.of(ctx).showSnackBar(
-                                          SnackBar(content: Text('فشل رفع الصورة: $e')),
-                                        );
-                                      }
-                                    }
-                                  },
-                            icon: thumbnailUploading
-                                ? const SizedBox(
-                                    width: 18,
-                                    height: 18,
-                                    child: CircularProgressIndicator(strokeWidth: 2),
-                                  )
-                                : const Icon(Icons.upload),
-                            label: const Text('رفع صورة'),
+                          const SizedBox(height: adminFormFieldSpacing),
+                          TextFormField(
+                            controller: titleEn,
+                            decoration: const InputDecoration(
+                              labelText: 'العنوان (إنجليزي) *',
+                              isDense: true,
+                            ),
+                            validator: (v) =>
+                                v == null || v.isEmpty ? 'مطلوب' : null,
                           ),
-                        ],
-                      ),
-                      if (thumbnailUploadedName != null)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 4),
-                          child: Row(
+                          const SizedBox(height: adminFormFieldSpacing),
+                          TextFormField(
+                            controller: descAr,
+                            decoration: const InputDecoration(
+                              labelText: 'الوصف (عربي) *',
+                              isDense: true,
+                              alignLabelWithHint: true,
+                            ),
+                            maxLines: 2,
+                            validator: (v) =>
+                                v == null || v.isEmpty ? 'مطلوب' : null,
+                          ),
+                          const SizedBox(height: adminFormFieldSpacing),
+                          TextFormField(
+                            controller: descEn,
+                            decoration: const InputDecoration(
+                              labelText: 'الوصف (إنجليزي) *',
+                              isDense: true,
+                              alignLabelWithHint: true,
+                            ),
+                            maxLines: 2,
+                            validator: (v) =>
+                                v == null || v.isEmpty ? 'مطلوب' : null,
+                          ),
+                          const SizedBox(height: adminFormFieldSpacing),
+                          Row(
                             children: [
-                              Icon(Icons.check_circle, color: Colors.green, size: 18),
-                              const SizedBox(width: 6),
-                              Text(thumbnailUploadedName!, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+                              Expanded(
+                                child: TextFormField(
+                                  controller: thumbnailUrl,
+                                  decoration: const InputDecoration(
+                                    labelText: 'رابط الغلاف أو ارفع صورة',
+                                    hintText: 'رابط أو ارفع',
+                                    isDense: true,
+                                  ),
+                                  validator: (v) =>
+                                      v == null || v.isEmpty ? 'مطلوب' : null,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              OutlinedButton.icon(
+                                onPressed: thumbnailUploading
+                                    ? null
+                                    : () async {
+                                        setDialogState(() => thumbnailUploading = true);
+                                        try {
+                                          final result = await FilePicker.platform.pickFiles(
+                                            type: FileType.image,
+                                            allowMultiple: false,
+                                            withData: true,
+                                          );
+                                          if (result == null ||
+                                              result.files.single.bytes == null) {
+                                            setDialogState(() => thumbnailUploading = false);
+                                            return;
+                                          }
+                                          final file = result.files.single;
+                                          final bytes = Uint8List.fromList(file.bytes!);
+                                          final name = file.name.isEmpty ? 'cover.jpg' : file.name;
+                                          final url = await ref
+                                              .read(videoUploadRepositoryProvider)
+                                              .uploadThumbnail(bytes: bytes, fileName: name);
+                                          thumbnailUrl.text = url;
+                                          setDialogState(() {
+                                            thumbnailUploadedName = name;
+                                            thumbnailUploading = false;
+                                          });
+                                        } catch (e) {
+                                          setDialogState(() => thumbnailUploading = false);
+                                          if (ctx.mounted) {
+                                            ScaffoldMessenger.of(ctx).showSnackBar(
+                                              SnackBar(content: Text('فشل رفع الصورة: $e')),
+                                            );
+                                          }
+                                        }
+                                      },
+                                icon: thumbnailUploading
+                                    ? const SizedBox(
+                                        width: 18,
+                                        height: 18,
+                                        child: CircularProgressIndicator(strokeWidth: 2),
+                                      )
+                                    : const Icon(Icons.upload_rounded, size: 20),
+                                label: const Text('رفع'),
+                              ),
                             ],
                           ),
-                        ),
-                      const SizedBox(height: 12),
-                      DropdownButtonFormField<String>(
-                        initialValue: level,
-                        decoration: const InputDecoration(
-                          labelText: 'المستوى',
-                        ),
-                        items: const [
-                          DropdownMenuItem(value: 'مبتدئ', child: Text('مبتدئ')),
-                          DropdownMenuItem(value: 'متوسط', child: Text('متوسط')),
-                          DropdownMenuItem(value: 'متقدم', child: Text('متقدم')),
-                        ],
-                        onChanged: (v) => level = v ?? 'مبتدئ',
-                      ),
-                      const SizedBox(height: 16),
-                      const Divider(),
-                      Row(
-                        children: [
-                          const Text('الدروس (يجب إضافة درس واحد على الأقل)', style: TextStyle(fontWeight: FontWeight.w500)),
-                          const Spacer(),
-                          TextButton.icon(
-                            onPressed: () {
-                              setDialogState(() {
-                                lessonEntries.add(_LessonEntry(
-                                  titleAr: TextEditingController(),
-                                  titleEn: TextEditingController(),
-                                  durationMin: TextEditingController(text: '10'),
-                                  videoUrl: TextEditingController(),
-                                ));
-                              });
-                            },
-                            icon: const Icon(Icons.add, size: 20),
-                            label: const Text('إضافة درس'),
+                          if (thumbnailUploadedName != null)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 6),
+                              child: Row(
+                                children: [
+                                  Icon(Icons.check_circle, color: Colors.green.shade700, size: 18),
+                                  const SizedBox(width: 6),
+                                  Text(thumbnailUploadedName!, style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+                                ],
+                              ),
+                            ),
+                          const SizedBox(height: adminFormFieldSpacing),
+                          DropdownButtonFormField<String>(
+                            initialValue: level,
+                            decoration: const InputDecoration(
+                              labelText: 'المستوى',
+                              isDense: true,
+                            ),
+                            items: const [
+                              DropdownMenuItem(value: 'مبتدئ', child: Text('مبتدئ')),
+                              DropdownMenuItem(value: 'متوسط', child: Text('متوسط')),
+                              DropdownMenuItem(value: 'متقدم', child: Text('متقدم')),
+                            ],
+                            onChanged: (v) => setDialogState(() => level = v ?? 'مبتدئ'),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: AppSpacing.lg),
+                      AdminFormSection(
+                        title: 'الدروس (درس واحد على الأقل)',
+                        icon: Icons.play_circle_outline_rounded,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              TextButton.icon(
+                                onPressed: () {
+                                  setDialogState(() {
+                                    lessonEntries.add(_LessonEntry(
+                                      titleAr: TextEditingController(),
+                                      titleEn: TextEditingController(),
+                                      durationMin: TextEditingController(text: '10'),
+                                      videoUrl: TextEditingController(),
+                                    ));
+                                  });
+                                },
+                                icon: const Icon(Icons.add_rounded, size: 20),
+                                label: const Text('إضافة درس'),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
                       ...lessonEntries.asMap().entries.map((entry) {
                         final i = entry.key;
                         final le = entry.value;
@@ -320,6 +335,8 @@ class CoursesScreen extends ConsumerWidget {
                           },
                         );
                       }),
+                        ],
+                      ),
                     ],
                   ),
                 ),
@@ -535,17 +552,21 @@ class CoursesScreen extends ConsumerWidget {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
+        backgroundColor: AppColors.background,
         appBar: AppBar(
           leading: adminAppBarLeading(context),
           title: const Text('إدارة الدورات'),
+          backgroundColor: AppColors.background,
+          elevation: 0,
+          scrolledUnderElevation: 0,
         ),
-        body: Padding(
-          padding: const EdgeInsets.all(AppSpacing.lg),
+        body: AdminPageBody(
           child: ref.watch(adminCoursesProvider).when(
                 data: (courses) => Column(
                   children: [
                     AdminSectionHeader(
                       title: 'الدورات',
+                      subtitle: 'إضافة وتعديل الدروس',
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [

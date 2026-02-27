@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared/shared.dart';
 import '../analytics/presentation/admin_analytics_providers.dart';
-import '../../core/constants/admin_breakpoints.dart';
 import '../../core/widgets/admin_widgets.dart';
 
 class DashboardScreen extends ConsumerWidget {
@@ -27,10 +26,7 @@ class DashboardScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: Padding(
-        padding: EdgeInsets.all(
-          AdminBreakpoints.isMobile(context) ? AppSpacing.md : AppSpacing.xl,
-        ),
+      body: AdminPageBody(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

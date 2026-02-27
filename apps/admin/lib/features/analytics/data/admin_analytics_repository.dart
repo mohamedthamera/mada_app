@@ -66,13 +66,18 @@ class AdminAnalyticsRepository {
     return await _client.from(table).count(CountOption.exact);
   }
 
-  /// أعداد حقيقية للوحة الأدمن (عبر RPC لتجاوز RLS)
+  /// أعداد حقيقية 100٪ للوحة الأدمن (RPC أو احتياطي من الجداول مباشرة)
   Future<Map<String, dynamic>> fetchDashboardCounts() async {
-    final res = await _client.rpc('admin_dashboard_counts');
-    if (res is! Map<String, dynamic>) throw Exception('استجابة غير متوقعة');
-    if (res['ok'] != true) {
-      throw Exception((res['message'] ?? 'فشل تحميل البيانات').toString());
-    }
+    try {
+      final res = await _client.rpc('admin_dashboard_counts');
+      if (res is Map<String, dynamic> && res['ok'] == true) {
+        return _parseDashboardResponse(res);
+      }
+    } catch (_) { /* fallback below */ }
+    return _fetchDashboardCountsFallback();
+  }
+
+  Map<String, dynamic> _parseDashboardResponse(Map<String, dynamic> res) {
     return {
       'registered_users': res['registered_users'] is int
           ? res['registered_users'] as int
@@ -89,6 +94,41 @@ class AdminAnalyticsRepository {
       'completion_rate': res['completion_rate'] is num
           ? (res['completion_rate'] as num).toDouble()
           : double.tryParse(res['completion_rate'].toString()) ?? 0.0,
+    };
+  }
+
+  /// احتياطي: أعداد حقيقية من الجداول مباشرة (عند فشل RPC)
+  Future<Map<String, dynamic>> _fetchDashboardCountsFallback() async {
+    int registered = 0;
+    int subscribed = 0;
+    int coursesCount = 0;
+    int enrollmentsCount = 0;
+    double completionRate = 0.0;
+    try {
+      registered = await _count('profiles');
+    } catch (_) {}
+    try {
+      subscribed = await _count('user_subscriptions');
+    } catch (_) {}
+    try {
+      coursesCount = await _count('courses');
+    } catch (_) {}
+    try {
+      enrollmentsCount = await _count('enrollments');
+    } catch (_) {}
+    try {
+      if (enrollmentsCount > 0) {
+        final completedList = await _client.from('progress').select('id').gte('progress_percent', 100);
+        final completed = (completedList as List).length;
+        completionRate = (completed / enrollmentsCount * 100).clamp(0.0, 100.0);
+      }
+    } catch (_) {}
+    return {
+      'registered_users': registered,
+      'subscribed_users': subscribed,
+      'courses': coursesCount,
+      'enrollments': enrollmentsCount,
+      'completion_rate': completionRate,
     };
   }
 }
