@@ -207,8 +207,7 @@ class __$$BannerModelImplCopyWithImpl<$Res>
 }
 
 /// @nodoc
-
-@JsonSerializable(fieldRename: FieldRename.snake)
+@JsonSerializable()
 class _$BannerModelImpl implements _BannerModel {
   const _$BannerModelImpl({
     required this.id,

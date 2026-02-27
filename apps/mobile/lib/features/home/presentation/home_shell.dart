@@ -7,7 +7,7 @@ class HomeShell extends StatelessWidget {
 
   final Widget child;
 
-  static const _routes = ['/home', '/courses', '/progress', '/jobs', '/profile'];
+  static const _routes = ['/home', '/courses', '/books', '/progress', '/jobs', '/profile'];
 
   @override
   Widget build(BuildContext context) {

@@ -30,6 +30,8 @@ Flutter monorepo for:
 SQL migrations are in `supabase/migrations`. Apply them in Supabase SQL editor.
 Seed data is in `supabase/seed.sql`.
 
+**Books feature:** Table `public.books`, storage buckets `book-covers` and `book-files`, and RLS are created by migration `035_books_table_and_storage.sql`. See [docs/BOOKS_SETUP.md](docs/BOOKS_SETUP.md) for applying the migration, bucket setup, and how to set the first admin (`profiles.role = 'admin'`).
+
 ## Firebase (FCM)
 1. Create Firebase project and add iOS/Android apps.
 2. Add `google-services.json` (Android) and `GoogleService-Info.plist` (iOS).

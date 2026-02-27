@@ -79,6 +79,11 @@ class AdaptiveScaffold extends StatelessWidget {
                     label: Text('الدورات'),
                   ),
                   NavigationRailDestination(
+                    icon: Icon(Icons.auto_stories_outlined),
+                    selectedIcon: Icon(Icons.auto_stories),
+                    label: Text('الكتب'),
+                  ),
+                  NavigationRailDestination(
                     icon: Icon(Icons.auto_graph_outlined),
                     selectedIcon: Icon(Icons.auto_graph),
                     label: Text('التقدم'),
@@ -129,6 +134,10 @@ class AdaptiveScaffold extends StatelessWidget {
               NavigationDestination(
                 icon: Icon(Icons.menu_book),
                 label: 'الدورات',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.auto_stories),
+                label: 'الكتب',
               ),
               NavigationDestination(
                 icon: Icon(Icons.auto_graph),

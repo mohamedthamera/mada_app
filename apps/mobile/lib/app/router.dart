@@ -20,6 +20,8 @@ import '../features/certificates/presentation/certificate_screen.dart';
 import '../features/notifications/presentation/notifications_screen.dart';
 import '../features/community/presentation/community_screen.dart';
 import '../features/jobs/presentation/jobs_screen.dart';
+import '../features/books/presentation/books_screen.dart';
+import '../features/books/presentation/book_details_screen.dart';
 import '../features/referral/presentation/referral_screen.dart';
 
 CustomTransitionPage<void> _fadePage(Widget child) {
@@ -105,6 +107,16 @@ final appRouter = GoRouter(
           path: '/courses/:id',
           pageBuilder: (context, state) => _fadePage(
             CourseDetailsScreen(courseId: state.pathParameters['id']!),
+          ),
+        ),
+        GoRoute(
+          path: '/books',
+          pageBuilder: (context, state) => _fadePage(const BooksScreen()),
+        ),
+        GoRoute(
+          path: '/books/:id',
+          pageBuilder: (context, state) => _fadePage(
+            BookDetailsScreen(bookId: state.pathParameters['id']!),
           ),
         ),
         GoRoute(

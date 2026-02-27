@@ -9,6 +9,7 @@ import '../features/analytics/analytics_screen.dart';
 import '../features/subscriptions/subscriptions_screen.dart';
 import '../features/jobs/jobs_screen.dart';
 import '../features/banners/banners_screen.dart';
+import '../features/books/books_screen.dart';
 import '../features/influencers/influencers_screen.dart';
 import '../features/dashboard/admin_shell.dart';
 
@@ -95,6 +96,10 @@ final adminRouter = GoRouter(
         GoRoute(
           path: '/banners',
           builder: (context, state) => const BannersScreen(),
+        ),
+        GoRoute(
+          path: '/books',
+          builder: (context, state) => const AdminBooksScreen(),
         ),
         GoRoute(
           path: '/influencers',

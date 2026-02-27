@@ -16,4 +16,5 @@ export 'models/notification_item.dart';
 export 'models/profile.dart';
 export 'models/progress.dart';
 export 'models/banner_model.dart';
+export 'models/book.dart';
 
