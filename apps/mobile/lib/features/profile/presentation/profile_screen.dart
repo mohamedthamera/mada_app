@@ -24,6 +24,7 @@ class ProfileScreen extends ConsumerWidget {
     final marketingUpdates = ref.watch(marketingUpdatesProvider);
     final user = ref.watch(supabaseClientProvider).auth.currentUser;
     final hasSubAsync = ref.watch(hasActiveSubscriptionProvider);
+    final profileAsync = ref.watch(profileDataProvider);
     final displayName = () {
       final metaName = user?.userMetadata?['name']?.toString().trim();
       if (metaName != null && metaName.isNotEmpty) return metaName;
@@ -33,6 +34,7 @@ class ProfileScreen extends ConsumerWidget {
       }
       return 'مستخدم';
     }();
+    final username = profileAsync.valueOrNull?['username'];
 
     return Directionality(
       textDirection: TextDirection.rtl,
@@ -48,18 +50,21 @@ class ProfileScreen extends ConsumerWidget {
                 context,
                 displayName: user != null ? displayName : 'مرحباً بك',
                 email: user != null ? (user.email ?? '') : 'سجّل الدخول لحفظ تقدمك',
+                username: username,
                 isSubscribed: isSubscribed,
               ),
               loading: () => _buildProfileHeader(
                 context,
                 displayName: user != null ? displayName : 'مرحباً بك',
                 email: user != null ? (user.email ?? '') : 'سجّل الدخول لحفظ تقدمك',
+                username: username,
                 isSubscribed: false,
               ),
               error: (_, __) => _buildProfileHeader(
                 context,
                 displayName: user != null ? displayName : 'مرحباً بك',
                 email: user != null ? (user.email ?? '') : 'سجّل الدخول لحفظ تقدمك',
+                username: username,
                 isSubscribed: false,
               ),
             ),
@@ -99,6 +104,7 @@ class ProfileScreen extends ConsumerWidget {
     BuildContext context, {
     required String displayName,
     required String email,
+    String? username,
     bool isSubscribed = false,
   }) {
     final initial = displayName.isNotEmpty ? displayName[0].toUpperCase() : '?';
@@ -186,6 +192,14 @@ class ProfileScreen extends ConsumerWidget {
                     ],
                   ],
                 ),
+                if (username != null && username.isNotEmpty) ...[
+                  const SizedBox(height: 2),
+                  AppText(
+                    '@$username',
+                    style: AppTextStyle.caption,
+                    color: AppColors.textMuted,
+                  ),
+                ],
                 const SizedBox(height: 4),
                 AppText(
                   email,
@@ -352,6 +366,7 @@ class ProfileScreen extends ConsumerWidget {
           const SnackBar(content: Text('تم تحديث الاسم بنجاح')),
         );
         ref.invalidate(supabaseClientProvider);
+        ref.invalidate(profileDataProvider);
       }
     } catch (e) {
       if (context.mounted) {

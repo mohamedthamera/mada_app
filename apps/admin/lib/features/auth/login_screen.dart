@@ -5,6 +5,7 @@ import 'package:shared/shared.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../app/di.dart';
 import '../../core/widgets/admin_widgets.dart';
+import '../../ui_system/app_theme.dart';
 
 String _authErrorMessage(dynamic e) {
   final msg = e.toString().toLowerCase();
@@ -171,8 +172,8 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                AppColors.background,
-                AppColors.surface.withValues(alpha:0.6),
+                AdminTheme.background,
+                AdminTheme.surfaceVariant,
               ],
             ),
           ),
@@ -193,11 +194,15 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
                             height: 72,
                             width: 72,
                             decoration: BoxDecoration(
-                              gradient: AppGradients.primary,
-                              borderRadius: BorderRadius.circular(AppRadius.lg),
+                              gradient: const LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [AdminTheme.primaryDark, AdminTheme.primary],
+                              ),
+                              borderRadius: BorderRadius.circular(AdminTheme.radiusLg),
                               boxShadow: [
                                 BoxShadow(
-                                  color: AppColors.primary.withValues(alpha:0.4),
+                                  color: AdminTheme.primary.withValues(alpha: 0.4),
                                   blurRadius: 16,
                                   offset: const Offset(0, 6),
                                 ),
@@ -205,7 +210,7 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
                             ),
                             child: const Icon(
                               Icons.admin_panel_settings_rounded,
-                              color: AppColors.primaryForeground,
+                              color: AdminTheme.primaryForeground,
                               size: 36,
                             ),
                           ),
@@ -216,7 +221,7 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
                           textAlign: TextAlign.center,
                           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                             fontWeight: FontWeight.w700,
-                            color: AppColors.textPrimary,
+                            color: AdminTheme.textPrimary,
                           ),
                         ),
                         const SizedBox(height: AppSpacing.sm),
@@ -224,7 +229,7 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
                           'سجّل دخولك لإدارة منصة Everest',
                           textAlign: TextAlign.center,
                           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: AppColors.textSecondary,
+                            color: AdminTheme.textSecondary,
                           ),
                         ),
                         const SizedBox(height: AppSpacing.xl),
@@ -282,7 +287,7 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
                             _isSignUp
                                 ? 'لديك حساب؟ تسجيل الدخول'
                                 : 'ليس لديك حساب؟ إنشاء حساب',
-                            style: TextStyle(color: AppColors.textSecondary),
+                            style: TextStyle(color: AdminTheme.textSecondary),
                           ),
                         ),
                       ],

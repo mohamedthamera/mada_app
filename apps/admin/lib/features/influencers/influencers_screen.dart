@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared/shared.dart';
+import '../../ui_system/app_theme.dart';
 import 'presentation/admin_influencer_providers.dart';
 import '../../core/widgets/admin_widgets.dart';
 import 'data/admin_influencer_repository.dart';
@@ -104,11 +105,11 @@ class _InfluencersScreenState extends ConsumerState<InfluencersScreen> {
     final influencersAsync = ref.watch(adminInfluencersProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AdminTheme.background,
       appBar: AppBar(
         leading: adminAppBarLeading(context),
         title: const Text('أكواد المؤثرين / الإحالة'),
-        backgroundColor: AppColors.background,
+        backgroundColor: AdminTheme.background,
         elevation: 0,
         scrolledUnderElevation: 0,
         actions: [
@@ -179,11 +180,11 @@ class _InfluencersScreenState extends ConsumerState<InfluencersScreen> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.people_outline, size: 64, color: AppColors.textMuted.withValues(alpha: 0.6)),
+                          Icon(Icons.people_outline, size: 64, color: AdminTheme.textMuted.withValues(alpha: 0.6)),
                           const SizedBox(height: AppSpacing.lg),
                           Text(
                             'لا يوجد مؤثرون بعد',
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith(color: AppColors.textSecondary),
+                            style: Theme.of(context).textTheme.titleMedium?.copyWith(color: AdminTheme.textSecondary),
                           ),
                         ],
                       ),
@@ -196,7 +197,7 @@ class _InfluencersScreenState extends ConsumerState<InfluencersScreen> {
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: list.length,
-                    separatorBuilder: (_, __) => Divider(height: 1, color: AppColors.border),
+                    separatorBuilder: (_, __) => Divider(height: 1, color: AdminTheme.border),
                     itemBuilder: (context, i) {
                       final row = list[i];
                       final id = row['influencer_id'] ?? row['id'] ?? '';
@@ -223,16 +224,16 @@ class _InfluencersScreenState extends ConsumerState<InfluencersScreen> {
                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                               decoration: BoxDecoration(
                                 color: isActive
-                                    ? AppColors.primary.withValues(alpha: 0.15)
-                                    : AppColors.textMuted.withValues(alpha: 0.2),
-                                borderRadius: BorderRadius.circular(AppRadius.sm),
+                                    ? AdminTheme.primary.withValues(alpha: 0.15)
+                                    : AdminTheme.textMuted.withValues(alpha: 0.2),
+                                borderRadius: BorderRadius.circular(AdminTheme.radiusSm),
                               ),
                               child: Text(
                                 code,
                                 style: TextStyle(
                                   fontFamily: 'monospace',
                                   fontWeight: FontWeight.w600,
-                                  color: isActive ? AppColors.primary : AppColors.textMuted,
+                                  color: isActive ? AdminTheme.primary : AdminTheme.textMuted,
                                 ),
                               ),
                             ),
@@ -245,14 +246,14 @@ class _InfluencersScreenState extends ConsumerState<InfluencersScreen> {
                             IconButton(
                               icon: Icon(
                                 isActive ? Icons.toggle_on : Icons.toggle_off,
-                                color: isActive ? AppColors.primary : AppColors.textMuted,
+                                color: isActive ? AdminTheme.primary : AdminTheme.textMuted,
                                 size: 36,
                               ),
                               onPressed: () => _toggleActive(id.toString()),
                               tooltip: isActive ? 'تعطيل' : 'تفعيل',
                             ),
                             IconButton(
-                              icon: const Icon(Icons.delete_outline, color: AppColors.danger),
+                              icon: const Icon(Icons.delete_outline, color: AdminTheme.error),
                               onPressed: () => _delete(id.toString()),
                               tooltip: 'حذف تدريجي',
                             ),
@@ -271,12 +272,12 @@ class _InfluencersScreenState extends ConsumerState<InfluencersScreen> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.error_outline, color: AppColors.danger, size: 48),
+                      Icon(Icons.error_outline, color: AdminTheme.error, size: 48),
                       const SizedBox(height: AppSpacing.md),
                       Text(
                         e.toString(),
                         textAlign: TextAlign.center,
-                        style: TextStyle(color: AppColors.danger),
+                        style: TextStyle(color: AdminTheme.error),
                       ),
                       const SizedBox(height: AppSpacing.md),
                       TextButton.icon(

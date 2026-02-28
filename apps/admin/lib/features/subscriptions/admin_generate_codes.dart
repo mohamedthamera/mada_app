@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared/shared.dart';
+import '../../ui_system/app_theme.dart';
 
 // ignore: deprecated_member_use, avoid_web_libraries_in_flutter
 import 'dart:html' if (dart.library.io) 'admin_generate_codes_stub.dart' as html;
@@ -298,9 +299,9 @@ class _AdminGenerateCodesState extends State<AdminGenerateCodes> {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.border.withValues(alpha: 0.4), width: 1),
+        color: AdminTheme.surface,
+        borderRadius: BorderRadius.circular(AdminTheme.radiusLg),
+        border: Border.all(color: AdminTheme.border, width: 1),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.12),
@@ -316,14 +317,14 @@ class _AdminGenerateCodesState extends State<AdminGenerateCodes> {
             'توليد أكواد الاشتراك الدائم',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
+              color: AdminTheme.textPrimary,
             ),
           ),
           const SizedBox(height: AppSpacing.xs),
           Text(
             'إنشاء أكواد قابلة للاستخدام لتفعيل الاشتراك مدى الحياة',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: AppColors.textMuted,
+              color: AdminTheme.textMuted,
             ),
           ),
           const SizedBox(height: AppSpacing.sm),
@@ -340,13 +341,13 @@ class _AdminGenerateCodesState extends State<AdminGenerateCodes> {
                 ),
                 decoration: BoxDecoration(
                   color: roleOk
-                      ? AppColors.primary.withValues(alpha: 0.08)
-                      : AppColors.textMuted.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(AppRadius.sm),
+? AdminTheme.primary.withValues(alpha: 0.08)
+                      : AdminTheme.textMuted.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(AdminTheme.radiusSm),
                   border: Border.all(
-                    color: roleOk
-                        ? AppColors.primary.withValues(alpha: 0.3)
-                        : AppColors.border.withValues(alpha: 0.5),
+                        color: roleOk
+                        ? AdminTheme.primary.withValues(alpha: 0.3)
+                        : AdminTheme.border.withValues(alpha: 0.5),
                   ),
                 ),
                 child: Row(
@@ -354,7 +355,7 @@ class _AdminGenerateCodesState extends State<AdminGenerateCodes> {
                     Icon(
                       roleOk ? Icons.verified_user : Icons.info_outline,
                       size: 18,
-                      color: roleOk ? AppColors.primary : AppColors.textMuted,
+                      color: roleOk ? AdminTheme.primary : AdminTheme.textMuted,
                     ),
                     const SizedBox(width: AppSpacing.sm),
                     Expanded(
@@ -365,7 +366,7 @@ class _AdminGenerateCodesState extends State<AdminGenerateCodes> {
                           Text(
                             'البريد: $email  |  الدور: ${_currentRole ?? 'جاري التحقق...'}',
                             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: AppColors.textSecondary,
+                              color: AdminTheme.textSecondary,
                             ),
                           ),
                           if (!roleOk && _currentRole != null) ...[
@@ -373,7 +374,7 @@ class _AdminGenerateCodesState extends State<AdminGenerateCodes> {
                             Text(
                               'لتفعيل الأدمن: Supabase → SQL Editor → select set_admin_by_email(\'$email\');',
                               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: AppColors.textMuted,
+                                color: AdminTheme.textMuted,
                                 fontSize: 11,
                               ),
                             ),
@@ -464,11 +465,11 @@ class _AdminGenerateCodesState extends State<AdminGenerateCodes> {
               width: double.infinity,
               padding: const EdgeInsets.all(AppSpacing.sm),
               decoration: BoxDecoration(
-                color: AppColors.border.withValues(alpha: 0.15),
-                border: Border.all(color: AppColors.border.withValues(alpha: 0.5)),
-                borderRadius: BorderRadius.circular(AppRadius.sm),
+                color: AdminTheme.border.withValues(alpha: 0.15),
+                border: Border.all(color: AdminTheme.border.withValues(alpha: 0.5)),
+                borderRadius: BorderRadius.circular(AdminTheme.radiusSm),
               ),
-              child: Text(_statusMessage!, style: TextStyle(color: AppColors.textSecondary)),
+              child: Text(_statusMessage!, style: TextStyle(color: AdminTheme.textSecondary)),
             ),
           ],
           if (_error != null) ...[
@@ -477,19 +478,19 @@ class _AdminGenerateCodesState extends State<AdminGenerateCodes> {
               width: double.infinity,
               padding: const EdgeInsets.all(AppSpacing.md),
               decoration: BoxDecoration(
-                color: AppColors.danger.withValues(alpha: 0.1),
-                border: Border.all(color: AppColors.danger.withValues(alpha: 0.3)),
-                borderRadius: BorderRadius.circular(AppRadius.md),
+                color: AdminTheme.error.withValues(alpha: 0.1),
+                border: Border.all(color: AdminTheme.error.withValues(alpha: 0.3)),
+                borderRadius: BorderRadius.circular(AdminTheme.radiusMd),
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.error_outline, color: AppColors.danger, size: 20),
+                  Icon(Icons.error_outline, color: AdminTheme.error, size: 20),
                   const SizedBox(width: AppSpacing.sm),
                   Expanded(
                     child: SelectableText(
                       _error!,
-                      style: TextStyle(color: AppColors.danger, fontSize: 13),
+                      style: TextStyle(color: AdminTheme.error, fontSize: 13),
                     ),
                   ),
                   if (_error!.contains('set_admin_by_email'))
@@ -535,7 +536,7 @@ class _AdminGenerateCodesState extends State<AdminGenerateCodes> {
                     'الأكواد المُولَّدة (${_generatedCodes.length})',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
+                      color: AdminTheme.textPrimary,
                     ),
                   ),
                 ),
@@ -556,8 +557,8 @@ class _AdminGenerateCodesState extends State<AdminGenerateCodes> {
             Container(
               height: 400,
               decoration: BoxDecoration(
-                border: Border.all(color: AppColors.border),
-                borderRadius: BorderRadius.circular(AppRadius.md),
+                border: Border.all(color: AdminTheme.border),
+                borderRadius: BorderRadius.circular(AdminTheme.radiusMd),
               ),
               child: ListView.builder(
                 padding: const EdgeInsets.all(AppSpacing.md),
@@ -569,9 +570,9 @@ class _AdminGenerateCodesState extends State<AdminGenerateCodes> {
                     child: Container(
                       padding: const EdgeInsets.all(AppSpacing.md),
                       decoration: BoxDecoration(
-                        color: AppColors.surface,
-                        border: Border.all(color: AppColors.border.withValues(alpha: 0.5)),
-                        borderRadius: BorderRadius.circular(AppRadius.sm),
+                        color: AdminTheme.surface,
+                        border: Border.all(color: AdminTheme.border.withValues(alpha: 0.5)),
+                        borderRadius: BorderRadius.circular(AdminTheme.radiusSm),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -605,7 +606,7 @@ class _AdminGenerateCodesState extends State<AdminGenerateCodes> {
                             'إخفاء: ${codeData['mask']}',
                             style: TextStyle(
                               fontSize: 12,
-                              color: AppColors.textMuted,
+                              color: AdminTheme.textMuted,
                               fontFamily: 'monospace',
                             ),
                           ),
@@ -623,7 +624,7 @@ class _AdminGenerateCodesState extends State<AdminGenerateCodes> {
                   'عرض أول 20 من ${_generatedCodes.length}. استخدم "نسخ الكل" لجميع الأكواد.',
                   style: TextStyle(
                     fontSize: 12,
-                    color: AppColors.textMuted,
+                    color: AdminTheme.textMuted,
                     fontStyle: FontStyle.italic,
                   ),
                 ),

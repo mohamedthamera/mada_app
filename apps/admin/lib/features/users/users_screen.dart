@@ -1,24 +1,42 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared/shared.dart';
+import '../../ui_system/app_theme.dart';
 import 'data/admin_users_repository.dart';
 import 'data/admin_user_model.dart';
 import 'presentation/admin_users_providers.dart';
 import '../../core/widgets/admin_widgets.dart';
 
-class UsersScreen extends ConsumerWidget {
+/// تصفية حسب الاشتراك: الكل / مشترك / غير مشترك
+enum _SubscriptionFilter { all, subscribed, notSubscribed }
+
+class UsersScreen extends ConsumerStatefulWidget {
   const UsersScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<UsersScreen> createState() => _UsersScreenState();
+}
+
+class _UsersScreenState extends ConsumerState<UsersScreen> {
+  final _searchController = TextEditingController();
+  _SubscriptionFilter _filter = _SubscriptionFilter.all;
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        backgroundColor: AppColors.background,
+        backgroundColor: AdminTheme.background,
         appBar: AppBar(
           leading: adminAppBarLeading(context),
           title: const Text('المستخدمون'),
-          backgroundColor: AppColors.background,
+          backgroundColor: AdminTheme.background,
           elevation: 0,
           scrolledUnderElevation: 0,
           actions: [
@@ -31,7 +49,17 @@ class UsersScreen extends ConsumerWidget {
         ),
         body: AdminPageBody(
           child: ref.watch(adminUsersProvider).when(
-                data: (users) => _UsersList(users: users, ref: ref),
+                data: (users) {
+                  final filtered = _filterUsers(users);
+                  return _UsersList(
+                    users: filtered,
+                    ref: ref,
+                    searchController: _searchController,
+                    filter: _filter,
+                    onFilterChanged: (f) => setState(() => _filter = f),
+                    onSearchChanged: () => setState(() {}),
+                  );
+                },
                 loading: () =>
                     const Center(child: CircularProgressIndicator()),
                 error: (e, _) => Center(
@@ -58,28 +86,109 @@ class UsersScreen extends ConsumerWidget {
       ),
     );
   }
+
+  List<AdminUser> _filterUsers(List<AdminUser> users) {
+    var list = users;
+    final query = _searchController.text.trim().toLowerCase();
+    if (query.isNotEmpty) {
+      list = list.where((u) {
+        return u.email.toLowerCase().contains(query) ||
+            u.username.toLowerCase().contains(query) ||
+            u.name.toLowerCase().contains(query);
+      }).toList();
+    }
+    switch (_filter) {
+      case _SubscriptionFilter.subscribed:
+        list = list.where((u) => u.isSubscribed).toList();
+        break;
+      case _SubscriptionFilter.notSubscribed:
+        list = list.where((u) => !u.isSubscribed).toList();
+        break;
+      case _SubscriptionFilter.all:
+        break;
+    }
+    return list;
+  }
 }
 
 /// قائمة المستخدمين — تعمل على الكمبيوتر والموبايل بدون DataTable
 class _UsersList extends StatelessWidget {
-  const _UsersList({required this.users, required this.ref});
+  const _UsersList({
+    required this.users,
+    required this.ref,
+    required this.searchController,
+    required this.filter,
+    required this.onFilterChanged,
+    required this.onSearchChanged,
+  });
 
   final List<AdminUser> users;
   final WidgetRef ref;
+  final TextEditingController searchController;
+  final _SubscriptionFilter filter;
+  final void Function(_SubscriptionFilter) onFilterChanged;
+  final VoidCallback onSearchChanged;
 
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         const AdminSectionHeader(
           title: 'المستخدمون',
           subtitle: 'جميع المستخدمين المسجلين في التطبيق',
         ),
         const SizedBox(height: AppSpacing.md),
+        // البحث: بالإيميل أو اسم المستخدم
+        TextField(
+          controller: searchController,
+          onChanged: (_) => onSearchChanged(),
+          decoration: InputDecoration(
+            hintText: 'بحث بالإيميل أو اسم المستخدم أو الاسم...',
+            prefixIcon: const Icon(Icons.search),
+            isDense: true,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AdminTheme.radiusMd),
+            ),
+            filled: true,
+            fillColor: AdminTheme.surface,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        // تصفية: مشترك / غير مشترك / الكل
+        Row(
+          children: [
+            Text(
+              'التصفية:',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AdminTheme.textSecondary,
+                    fontWeight: FontWeight.w500,
+                  ),
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            ChoiceChip(
+              label: const Text('الكل'),
+              selected: filter == _SubscriptionFilter.all,
+              onSelected: (_) => onFilterChanged(_SubscriptionFilter.all),
+            ),
+            const SizedBox(width: AppSpacing.xs),
+            ChoiceChip(
+              label: const Text('مشترك'),
+              selected: filter == _SubscriptionFilter.subscribed,
+              onSelected: (_) => onFilterChanged(_SubscriptionFilter.subscribed),
+            ),
+            const SizedBox(width: AppSpacing.xs),
+            ChoiceChip(
+              label: const Text('غير مشترك'),
+              selected: filter == _SubscriptionFilter.notSubscribed,
+              onSelected: (_) => onFilterChanged(_SubscriptionFilter.notSubscribed),
+            ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.md),
         if (users.isEmpty)
           const Expanded(
-            child: Center(child: Text('لا يوجد مستخدمون مسجلون حالياً')),
+            child: Center(child: Text('لا توجد نتائج')),
           )
         else
           Expanded(
@@ -113,7 +222,7 @@ class _UsersList extends StatelessWidget {
                                 color: user.isSubscribed
                                     ? Colors.green.withValues(alpha: 0.15)
                                     : Colors.grey.withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(AppRadius.sm),
+                                borderRadius: BorderRadius.circular(AdminTheme.radiusSm),
                               ),
                               child: Text(
                                 user.isSubscribed ? 'مشترك' : 'غير مشترك',
@@ -132,13 +241,20 @@ class _UsersList extends StatelessWidget {
                         Text(
                           user.email,
                           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: AppColors.textMuted,
+                            color: AdminTheme.textMuted,
                           ),
                         ),
+                        if (user.username.isNotEmpty && user.username != '—')
+                          Text(
+                            'اسم المستخدم: ${user.username}',
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: AdminTheme.textMuted,
+                            ),
+                          ),
                         Text(
                           '${user.role} • ${user.createdAt.day}/${user.createdAt.month}/${user.createdAt.year}',
                           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: AppColors.textMuted,
+                            color: AdminTheme.textMuted,
                           ),
                         ),
                         const SizedBox(height: AppSpacing.sm),

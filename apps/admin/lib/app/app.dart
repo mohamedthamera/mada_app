@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:shared/shared.dart';
 import 'router.dart';
+import '../ui_system/app_theme.dart';
 
 class AdminApp extends StatelessWidget {
   const AdminApp({super.key});
@@ -18,8 +19,8 @@ class AdminApp extends StatelessWidget {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      theme: AppTheme.light(),
-      darkTheme: AppTheme.dark(),
+      theme: AdminTheme.light(),
+      darkTheme: AdminTheme.light(),
       routerConfig: adminRouter,
     );
   }

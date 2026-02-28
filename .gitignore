@@ -52,3 +52,5 @@ node_modules/
 
 # Supabase local
 supabase/.temp/
+.vercel
+.env*.local

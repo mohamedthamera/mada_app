@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:shared/shared.dart';
 import '../constants/admin_breakpoints.dart';
 import '../constants/admin_constants.dart';
+import '../../ui_system/app_theme.dart';
 
 /// يوفر للم شاشات الأدمن إمكانية فتح الدرج على الموبايل
 class AdminDrawerScope extends InheritedWidget {
@@ -76,18 +76,12 @@ class AdminCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: padding ?? const EdgeInsets.all(AppSpacing.lg),
+      padding: padding ?? const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: borderRadius ?? BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.border.withValues(alpha: 0.35), width: 1),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 16,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        color: AdminTheme.surface,
+        borderRadius: borderRadius ?? BorderRadius.circular(AdminTheme.radiusLg),
+        border: Border.all(color: AdminTheme.border, width: 1),
+        boxShadow: AdminTheme.cardShadow,
       ),
       child: child,
     );
@@ -115,19 +109,19 @@ class AdminFormSection extends StatelessWidget {
         Row(
           children: [
             if (icon != null) ...[
-              Icon(icon, size: 20, color: AppColors.primary),
-              const SizedBox(width: AppSpacing.sm),
+              Icon(icon, size: 20, color: AdminTheme.primary),
+              const SizedBox(width: 8),
             ],
             Text(
               title,
               style: Theme.of(context).textTheme.titleSmall?.copyWith(
                 fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
+                color: AdminTheme.textPrimary,
               ),
             ),
           ],
         ),
-        const SizedBox(height: AppSpacing.sm),
+        const SizedBox(height: 8),
         ...children,
       ],
     );
@@ -164,16 +158,16 @@ class AdminSectionHeader extends StatelessWidget {
                   title,
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
+                    color: AdminTheme.textPrimary,
                     letterSpacing: -0.3,
                   ),
                 ),
                 if (subtitle != null && subtitle!.isNotEmpty) ...[
-                  const SizedBox(height: AppSpacing.xs),
+                  const SizedBox(height: 4),
                   Text(
                     subtitle!,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textMuted,
+                      color: AdminTheme.textMuted,
                     ),
                   ),
                 ],

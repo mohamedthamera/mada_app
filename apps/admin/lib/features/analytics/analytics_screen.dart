@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared/shared.dart';
+import '../../ui_system/app_theme.dart';
 import 'presentation/admin_analytics_providers.dart';
 import '../../core/widgets/admin_widgets.dart';
 
@@ -13,11 +14,11 @@ class AnalyticsScreen extends ConsumerWidget {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        backgroundColor: AppColors.background,
+        backgroundColor: AdminTheme.background,
         appBar: AppBar(
           leading: adminAppBarLeading(context),
           title: const Text('التحليلات'),
-          backgroundColor: AppColors.background,
+          backgroundColor: AdminTheme.background,
           elevation: 0,
           scrolledUnderElevation: 0,
         ),

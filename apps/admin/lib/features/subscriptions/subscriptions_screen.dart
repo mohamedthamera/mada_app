@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared/shared.dart';
+import '../../ui_system/app_theme.dart';
 import 'presentation/admin_subscriptions_providers.dart';
 import '../../core/widgets/admin_widgets.dart';
 import 'admin_generate_codes.dart';
@@ -14,11 +15,11 @@ class SubscriptionsScreen extends ConsumerWidget {
     final subscriptionsAsync = ref.watch(adminSubscriptionsProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AdminTheme.background,
       appBar: AppBar(
         leading: adminAppBarLeading(context),
         title: const Text('الاشتراكات'),
-        backgroundColor: AppColors.background,
+        backgroundColor: AdminTheme.background,
         elevation: 0,
         scrolledUnderElevation: 0,
         actions: [
@@ -54,13 +55,13 @@ class SubscriptionsScreen extends ConsumerWidget {
                             Icon(
                               Icons.subscriptions_outlined,
                               size: 64,
-                              color: AppColors.textMuted.withValues(alpha:0.6),
+                              color: AdminTheme.textMuted.withValues(alpha: 0.6),
                             ),
                             const SizedBox(height: AppSpacing.lg),
                             Text(
                               'لا يوجد مستخدمون مشتركون بعد',
                               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                color: AppColors.textSecondary,
+                                color: AdminTheme.textSecondary,
                               ),
                             ),
                             const SizedBox(height: AppSpacing.sm),
@@ -68,7 +69,7 @@ class SubscriptionsScreen extends ConsumerWidget {
                               'ستظهر هنا قائمة المستخدمين عند تفعيل اشتراكهم (كود أو بوابة دفع)',
                               textAlign: TextAlign.center,
                               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: AppColors.textMuted,
+                                color: AdminTheme.textMuted,
                               ),
                             ),
                           ],
@@ -120,7 +121,7 @@ class SubscriptionsScreen extends ConsumerWidget {
                                   (row['email'] as String?) ?? '—',
                                   style: TextStyle(
                                     fontSize: 12,
-                                    color: AppColors.textSecondary,
+                                    color: AdminTheme.textSecondary,
                                   ),
                                 )),
                                 DataCell(_TypeChip(
@@ -147,13 +148,13 @@ class SubscriptionsScreen extends ConsumerWidget {
                       Icon(
                         Icons.error_outline_rounded,
                         size: 48,
-                        color: AppColors.textMuted,
+                        color: AdminTheme.textMuted,
                       ),
                       const SizedBox(height: AppSpacing.md),
                       Text(
                         'تعذر تحميل الاشتراكات',
                         style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color: AppColors.textSecondary,
+                          color: AdminTheme.textSecondary,
                         ),
                       ),
                       const SizedBox(height: AppSpacing.xs),
@@ -163,7 +164,7 @@ class SubscriptionsScreen extends ConsumerWidget {
                           '$e',
                           textAlign: TextAlign.center,
                           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: AppColors.textMuted,
+                            color: AdminTheme.textMuted,
                           ),
                         ),
                       ),
@@ -200,14 +201,14 @@ class _TypeChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final text = isLifetime ? 'مدى الحياة' : 'عادي';
     final bg = isLifetime
-        ? AppColors.primary.withValues(alpha: 0.2)
-        : AppColors.textMuted.withValues(alpha: 0.2);
-    final fg = isLifetime ? AppColors.primary : AppColors.textSecondary;
+        ? AdminTheme.primary.withValues(alpha: 0.2)
+        : AdminTheme.textMuted.withValues(alpha: 0.2);
+    final fg = isLifetime ? AdminTheme.primary : AdminTheme.textSecondary;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
       decoration: BoxDecoration(
         color: bg,
-        borderRadius: BorderRadius.circular(AppRadius.sm),
+        borderRadius: BorderRadius.circular(AdminTheme.radiusSm),
       ),
       child: Text(
         text,

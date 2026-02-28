@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared/shared.dart';
+import '../../ui_system/app_theme.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:video_player/video_player.dart';
 import 'dart:typed_data';
@@ -17,11 +18,11 @@ class BannersScreen extends ConsumerWidget {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        backgroundColor: AppColors.background,
+        backgroundColor: AdminTheme.background,
         appBar: AppBar(
           leading: adminAppBarLeading(context),
           title: const Text('إدارة البنرات الإعلانية'),
-          backgroundColor: AppColors.background,
+          backgroundColor: AdminTheme.background,
           elevation: 0,
           scrolledUnderElevation: 0,
           actions: [
@@ -192,27 +193,57 @@ class _BannerFormDialogState extends ConsumerState<BannerFormDialog> {
   }
 
   Future<void> _pickImage() async {
-    final result = await FilePicker.platform.pickFiles(type: FileType.image);
-    if (result == null || result.files.isEmpty) return;
-    final file = result.files.single;
-    final bytes = await _bytesFromPlatformFile(file);
-    if (bytes == null) return;
-    setState(() {
-      _selectedImage = bytes;
-      _fileName = file.name;
-    });
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.image,
+        allowMultiple: false,
+        withData: true,
+      );
+      if (!mounted) return;
+      if (result == null || result.files.isEmpty) return;
+      final file = result.files.first;
+      final bytes = file.bytes != null
+          ? file.bytes!
+          : await _bytesFromPlatformFile(file);
+      if (bytes == null || !mounted) return;
+      setState(() {
+        _selectedImage = bytes;
+        _fileName = file.name;
+      });
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('فشل اختيار الصورة: $e'), backgroundColor: Colors.red.shade700),
+        );
+      }
+    }
   }
 
   Future<void> _pickVideo() async {
-    final result = await FilePicker.platform.pickFiles(type: FileType.video);
-    if (result == null || result.files.isEmpty) return;
-    final file = result.files.single;
-    final bytes = await _bytesFromPlatformFile(file);
-    if (bytes == null) return;
-    setState(() {
-      _selectedVideo = bytes;
-      _videoFileName = file.name;
-    });
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.video,
+        allowMultiple: false,
+        withData: true,
+      );
+      if (!mounted) return;
+      if (result == null || result.files.isEmpty) return;
+      final file = result.files.first;
+      final bytes = file.bytes != null
+          ? file.bytes!
+          : await _bytesFromPlatformFile(file);
+      if (bytes == null || !mounted) return;
+      setState(() {
+        _selectedVideo = bytes;
+        _videoFileName = file.name;
+      });
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('فشل اختيار الفيديو: $e'), backgroundColor: Colors.red.shade700),
+        );
+      }
+    }
   }
 
   @override

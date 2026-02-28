@@ -1,11 +1,18 @@
-import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared/shared.dart';
 import '../../core/constants/admin_breakpoints.dart';
 import '../../core/widgets/admin_widgets.dart';
+import '../../ui_system/app_theme.dart';
 import 'data/admin_jobs_repository.dart';
 import 'presentation/admin_jobs_providers.dart';
+
+/// استخراج نص من خريطة الوظيفة دون رمي استثناء
+String _str(Map<String, dynamic> j, String key) {
+  final v = j[key];
+  if (v == null) return '';
+  return v.toString().trim();
+}
 
 class AdminJobsScreen extends ConsumerWidget {
   const AdminJobsScreen({super.key});
@@ -15,11 +22,11 @@ class AdminJobsScreen extends ConsumerWidget {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        backgroundColor: AppColors.background,
+        backgroundColor: AdminTheme.background,
         appBar: AppBar(
           leading: adminAppBarLeading(context),
           title: const Text('إدارة الوظائف'),
-          backgroundColor: AppColors.background,
+          backgroundColor: AdminTheme.background,
           elevation: 0,
           scrolledUnderElevation: 0,
           actions: [
@@ -44,81 +51,93 @@ class AdminJobsScreen extends ConsumerWidget {
               ),
               Expanded(
                 child: AdminCard(
+                  padding: const EdgeInsets.all(16),
                   child: ref.watch(adminJobsProvider).when(
                         data: (jobs) {
                           if (jobs.isEmpty) {
                             return const Center(
-                              child: Text('لا توجد وظائف حالياً'),
+                              child: Text('لا توجد وظائف حالياً. اضغط «إضافة وظيفة» لإنشاء أول وظيفة.'),
                             );
                           }
-                          return SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: DataTable2(
-                              columns: const [
-                              DataColumn(label: Text('المسمى الوظيفي')),
-                              DataColumn(label: Text('الشركة')),
-                              DataColumn(label: Text('الموقع')),
-                              DataColumn(label: Text('النوع')),
-                              DataColumn(label: Text('رابط التقديم')),
-                              DataColumn(label: Text('إجراءات')),
-                            ],
-                            rows: jobs
-                                .map(
-                                  (j) => DataRow(
-                                    cells: [
-                                      DataCell(Text(j['title_ar'] as String)),
-                                      DataCell(Text(j['company_name'] as String)),
-                                      DataCell(Text(j['location'] as String)),
-                                      DataCell(
-                                        Text(_jobTypeLabel(
-                                            j['job_type'] as String)),
-                                      ),
-                                      DataCell(
-                                        Text(
-                                          (j['apply_url'] as String?) ?? '—',
-                                        ),
-                                      ),
-                                      DataCell(
-                                        Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            IconButton(
-                                              tooltip: 'تعديل',
-                                              icon: const Icon(Icons.edit),
-                                              onPressed: () =>
-                                                  _showEditJobDialog(
-                                                context,
-                                                ref,
-                                                j,
-                                              ),
+                          return ListView.builder(
+                            itemCount: jobs.length,
+                            itemBuilder: (context, index) {
+                              final j = jobs[index];
+                              return Card(
+                                margin: const EdgeInsets.only(bottom: 12),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: Text(
+                                              _str(j, 'title_ar').isEmpty ? '—' : _str(j, 'title_ar'),
+                                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
                                             ),
-                                            IconButton(
-                                              tooltip: 'حذف',
-                                              icon: const Icon(
-                                                Icons.delete_outline,
-                                                color: Colors.redAccent,
-                                              ),
-                                              onPressed: () =>
-                                                  _confirmDeleteJob(
-                                                context,
-                                                ref,
-                                                j['id'] as String,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
+                                          ),
+                                          IconButton(
+                                            tooltip: 'تعديل',
+                                            icon: const Icon(Icons.edit),
+                                            onPressed: () => _showEditJobDialog(context, ref, j),
+                                          ),
+                                          IconButton(
+                                            tooltip: 'حذف',
+                                            icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
+                                            onPressed: () {
+                                              final id = _str(j, 'id');
+                                              if (id.isNotEmpty) _confirmDeleteJob(context, ref, id);
+                                            },
+                                          ),
+                                        ],
                                       ),
+                                      const SizedBox(height: 8),
+                                      Text('الشركة: ${_str(j, 'company_name').isEmpty ? '—' : _str(j, 'company_name')}',
+                                          style: Theme.of(context).textTheme.bodyMedium),
+                                      Text('الموقع: ${_str(j, 'location').isEmpty ? '—' : _str(j, 'location')}',
+                                          style: Theme.of(context).textTheme.bodyMedium),
+                                      Text('النوع: ${_jobTypeLabel(_str(j, 'job_type'))}',
+                                          style: Theme.of(context).textTheme.bodyMedium),
+                                      if (_str(j, 'apply_url').isNotEmpty)
+                                        Text('رابط التقديم: ${_str(j, 'apply_url')}',
+                                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                                  color: AdminTheme.textMuted,
+                                                )),
                                     ],
                                   ),
-                                )
-                                .toList(),
-                            ),
+                                ),
+                              );
+                            },
                           );
                         },
                         loading: () =>
                             const Center(child: CircularProgressIndicator()),
                         error: (e, _) =>
-                            Center(child: Text('تعذر تحميل الوظائف: $e')),
+                            Center(
+                              child: Padding(
+                                padding: const EdgeInsets.all(24),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(Icons.error_outline, size: 48, color: AdminTheme.error),
+                                    const SizedBox(height: 16),
+                                    Text('تعذر تحميل الوظائف', style: Theme.of(context).textTheme.titleMedium),
+                                    const SizedBox(height: 8),
+                                    Text('$e', style: Theme.of(context).textTheme.bodySmall, textAlign: TextAlign.center),
+                                    const SizedBox(height: 16),
+                                    FilledButton.icon(
+                                      onPressed: () => ref.invalidate(adminJobsProvider),
+                                      icon: const Icon(Icons.refresh),
+                                      label: const Text('إعادة المحاولة'),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
                       ),
                 ),
               ),
@@ -360,24 +379,17 @@ class AdminJobsScreen extends ConsumerWidget {
     WidgetRef ref,
     Map<String, dynamic> job,
   ) {
-    final titleAr =
-        TextEditingController(text: job['title_ar'] as String? ?? '');
-    final company =
-        TextEditingController(text: job['company_name'] as String? ?? '');
-    final location =
-        TextEditingController(text: job['location'] as String? ?? '');
-    final descriptionAr =
-        TextEditingController(text: job['description_ar'] as String? ?? '');
-    final salary = TextEditingController(text: job['salary'] as String? ?? '');
-    final workDays =
-        TextEditingController(text: job['work_days'] as String? ?? '');
-    final requirements =
-        TextEditingController(text: job['requirements'] as String? ?? '');
-    final applyUrl =
-        TextEditingController(text: job['apply_url'] as String? ?? '');
+    final titleAr = TextEditingController(text: _str(job, 'title_ar'));
+    final company = TextEditingController(text: _str(job, 'company_name'));
+    final location = TextEditingController(text: _str(job, 'location'));
+    final descriptionAr = TextEditingController(text: _str(job, 'description_ar'));
+    final salary = TextEditingController(text: _str(job, 'salary'));
+    final workDays = TextEditingController(text: _str(job, 'work_days'));
+    final requirements = TextEditingController(text: _str(job, 'requirements'));
+    final applyUrl = TextEditingController(text: _str(job, 'apply_url'));
 
-    String jobType = job['job_type'] as String? ?? 'full_time';
-    String workMode = job['work_mode'] as String? ?? 'onsite';
+    String jobType = _str(job, 'job_type').isEmpty ? 'full_time' : _str(job, 'job_type');
+    String workMode = _str(job, 'work_mode').isEmpty ? 'onsite' : _str(job, 'work_mode');
 
     final formKey = GlobalKey<FormState>();
 
@@ -547,7 +559,7 @@ class AdminJobsScreen extends ConsumerWidget {
                   if (!formKey.currentState!.validate()) return;
                   try {
                     await ref.read(adminJobsRepositoryProvider).updateJob(
-                          id: job['id'] as String,
+                          id: _str(job, 'id'),
                           titleAr: titleAr.text.trim(),
                           companyName: company.text.trim(),
                           location: location.text.trim(),

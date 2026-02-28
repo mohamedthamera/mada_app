@@ -1,7 +1,12 @@
 abstract class AuthRepository {
-  Future<void> signIn({required String email, required String password});
+  /// تسجيل الدخول بالبريد الإلكتروني أو اسم المستخدم + كلمة المرور
+  Future<void> signIn({
+    required String emailOrUsername,
+    required String password,
+  });
   Future<void> signUp({
     required String name,
+    required String username,
     required String email,
     required String password,
   });

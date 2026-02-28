@@ -17,7 +17,7 @@ class LoginScreen extends ConsumerStatefulWidget {
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
+  final _emailOrUsernameController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _loading = false;
   bool _resetLoading = false;
@@ -26,14 +26,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   void dispose() {
-    _emailController.dispose();
+    _emailOrUsernameController.dispose();
     _passwordController.dispose();
     _resetEmailController.dispose();
     super.dispose();
   }
 
   Future<void> _showForgotPasswordDialog() async {
-    _resetEmailController.text = _emailController.text.trim();
+    final v = _emailOrUsernameController.text.trim();
+    _resetEmailController.text = v.contains('@') ? v : '';
     final sent = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
@@ -135,7 +136,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     setState(() => _loading = true);
     try {
       await ref.read(authRepositoryProvider).signIn(
-            email: _emailController.text.trim(),
+            emailOrUsername: _emailOrUsernameController.text.trim(),
             password: _passwordController.text.trim(),
           );
       if (mounted) {
@@ -198,12 +199,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     style: AppTextStyle.body, color: AppColors.textSecondary),
                 const SizedBox(height: AppSpacing.xl),
                 TextFormField(
-                  controller: _emailController,
+                  controller: _emailOrUsernameController,
                   keyboardType: TextInputType.emailAddress,
-                  decoration: InputDecoration(labelText: t.email),
+                  decoration: const InputDecoration(
+                    labelText: 'البريد الإلكتروني أو اسم المستخدم',
+                    hintText: 'example@email.com أو اسم المستخدم',
+                  ),
                   validator: (v) {
-                    if (v == null || v.trim().isEmpty) return 'أدخل البريد الإلكتروني';
-                    if (!_isValidEmail(v)) return 'أدخل بريداً إلكترونياً صحيحاً';
+                    if (v == null || v.trim().isEmpty) return 'أدخل البريد الإلكتروني أو اسم المستخدم';
                     return null;
                   },
                 ),

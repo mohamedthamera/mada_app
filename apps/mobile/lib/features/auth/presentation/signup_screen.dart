@@ -20,6 +20,7 @@ class SignupScreen extends ConsumerStatefulWidget {
 class _SignupScreenState extends ConsumerState<SignupScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
+  final _usernameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _referralCodeController = TextEditingController();
@@ -28,6 +29,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   @override
   void dispose() {
     _nameController.dispose();
+    _usernameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     _referralCodeController.dispose();
@@ -48,12 +50,20 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     return true;
   }
 
+  /// التحقق من صيغة اسم المستخدم (أحرف، أرقام، شرطة سفلية فقط، 3–24 حرفاً)
+  static bool _isValidUsername(String v) {
+    final s = v.trim();
+    if (s.length < 3 || s.length > 24) return false;
+    return RegExp(r'^[a-zA-Z0-9_\u0600-\u06FF]+$').hasMatch(s);
+  }
+
   Future<void> _signup() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _loading = true);
     try {
       await ref.read(authRepositoryProvider).signUp(
             name: _nameController.text.trim(),
+            username: _usernameController.text.trim(),
             email: _emailController.text.trim(),
             password: _passwordController.text.trim(),
           );
@@ -119,6 +129,19 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                   decoration: const InputDecoration(labelText: 'الاسم الكامل'),
                   validator: (v) {
                     if (v == null || v.trim().isEmpty) return 'أدخل الاسم';
+                    return null;
+                  },
+                ),
+                const SizedBox(height: AppSpacing.md),
+                TextFormField(
+                  controller: _usernameController,
+                  decoration: const InputDecoration(
+                    labelText: 'اسم المستخدم *',
+                    hintText: 'مثال: ahmad_user',
+                  ),
+                  validator: (v) {
+                    if (v == null || v.trim().isEmpty) return 'أدخل اسم المستخدم';
+                    if (!_isValidUsername(v)) return 'اسم المستخدم: 3–24 حرفاً، أحرف وأرقام و _ فقط';
                     return null;
                   },
                 ),

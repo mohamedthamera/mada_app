@@ -1,9 +1,11 @@
+import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared/shared.dart';
 import '../../core/constants/admin_breakpoints.dart';
 import '../../core/widgets/admin_widgets.dart';
+import '../../ui_system/app_theme.dart';
 import 'data/admin_books_repository.dart';
 import 'presentation/admin_books_providers.dart';
 
@@ -44,11 +46,11 @@ class _AdminBooksScreenState extends ConsumerState<AdminBooksScreen> {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        backgroundColor: AppColors.background,
+        backgroundColor: AdminTheme.background,
         appBar: AppBar(
           leading: adminAppBarLeading(context),
           title: const Text('إدارة الكتب'),
-          backgroundColor: AppColors.background,
+          backgroundColor: AdminTheme.background,
           elevation: 0,
           scrolledUnderElevation: 0,
           actions: [
@@ -407,28 +409,50 @@ class _BookFormDialogState extends ConsumerState<_BookFormDialog> {
   }
 
   Future<void> _pickAndUploadCover() async {
-    final result = await FilePicker.platform.pickFiles(
-      type: FileType.image,
-      allowedExtensions: ['jpg', 'jpeg', 'png', 'webp'],
-    );
-    if (result == null || result.files.single.bytes == null) return;
+    if (_uploading) return;
     setState(() => _uploading = true);
+    final messenger = ScaffoldMessenger.of(context);
     try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['jpg', 'jpeg', 'png', 'webp'],
+        allowMultiple: false,
+        withData: true,
+      );
+      if (!mounted) return;
+      setState(() => _uploading = false);
+      if (result == null || result.files.isEmpty) return;
+      final file = result.files.first;
+      final bytes = file.bytes;
+      if (bytes == null || bytes.isEmpty) {
+        messenger.showSnackBar(
+          const SnackBar(content: Text('لم يتم تحميل الملف. جرّب مرة أخرى أو اختر صورة أصغر.')),
+        );
+        return;
+      }
+      setState(() => _uploading = true);
       final repo = ref.read(adminBooksRepositoryProvider);
-      final bytes = result.files.single.bytes!;
-      final name = result.files.single.name;
-      final path = await repo.uploadCover(bytes, name);
+      final name = file.name.trim().isEmpty ? 'cover.jpg' : file.name;
+      final path = await repo.uploadCover(Uint8List.fromList(bytes), name);
       if (mounted) {
         setState(() {
           _coverPath = path;
           _coverFileName = name;
           _uploading = false;
         });
+        messenger.showSnackBar(const SnackBar(content: Text('تم رفع الغلاف بنجاح')));
       }
-    } catch (e) {
+    } catch (e, st) {
+      if (mounted) setState(() => _uploading = false);
+      debugPrint('_pickAndUploadCover error: $e\n$st');
       if (mounted) {
-        setState(() => _uploading = false);
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('فشل رفع الغلاف: $e')));
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text('خطأ: ${e.toString().split('\n').first}'),
+            backgroundColor: Colors.red.shade700,
+            duration: const Duration(seconds: 5),
+          ),
+        );
       }
     }
   }
@@ -437,9 +461,20 @@ class _BookFormDialogState extends ConsumerState<_BookFormDialog> {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['pdf', 'epub'],
+      allowMultiple: false,
+      withData: true,
     );
-    if (result == null || result.files.single.bytes == null) return;
-    final ext = result.files.single.extension?.toLowerCase();
+    if (result == null || result.files.isEmpty) return;
+    final file = result.files.first;
+    if (file.bytes == null || file.bytes!.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('لم يتم تحميل الملف. جرّب مرة أخرى.')),
+        );
+      }
+      return;
+    }
+    final ext = file.extension?.toLowerCase();
     if (ext != 'pdf' && ext != 'epub') {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('الملف يجب أن يكون PDF أو EPUB')));
@@ -449,9 +484,9 @@ class _BookFormDialogState extends ConsumerState<_BookFormDialog> {
     setState(() => _uploading = true);
     try {
       final repo = ref.read(adminBooksRepositoryProvider);
-      final bytes = result.files.single.bytes!;
-      final name = result.files.single.name;
-      final path = await repo.uploadFile(bytes, name);
+      final bytes = file.bytes!;
+      final name = file.name.trim().isEmpty ? 'book.${ext ?? 'pdf'}' : file.name;
+      final path = await repo.uploadFile(Uint8List.fromList(bytes), name);
       if (mounted) {
         setState(() {
           _filePath = path;

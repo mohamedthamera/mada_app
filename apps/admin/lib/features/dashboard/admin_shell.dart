@@ -4,6 +4,7 @@ import 'package:shared/shared.dart';
 import '../../core/constants/admin_breakpoints.dart';
 import '../../core/constants/admin_constants.dart';
 import '../../core/widgets/admin_widgets.dart';
+import '../../ui_system/app_theme.dart';
 
 final GlobalKey<ScaffoldState> _adminShellScaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -74,17 +75,17 @@ class AdminShell extends StatelessWidget {
                 onNavTap?.call();
                 context.go(_routes[i]);
               },
-              borderRadius: BorderRadius.circular(AppRadius.sm),
+              borderRadius: BorderRadius.circular(AdminTheme.radiusMd),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 150),
                 padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm + 2),
                 decoration: BoxDecoration(
                   color: selected
-                      ? AppColors.primary.withValues(alpha: 0.12)
+                      ? AdminTheme.primary.withValues(alpha: 0.12)
                       : Colors.transparent,
-                  borderRadius: BorderRadius.circular(AppRadius.sm),
+                  borderRadius: BorderRadius.circular(AdminTheme.radiusMd),
                   border: selected
-                      ? Border.all(color: AppColors.primary.withValues(alpha: 0.35), width: 1)
+                      ? Border.all(color: AdminTheme.primary.withValues(alpha: 0.35), width: 1)
                       : null,
                 ),
                 child: Row(
@@ -92,14 +93,14 @@ class AdminShell extends StatelessWidget {
                     Icon(
                       selected ? _iconsSelected[i] : _icons[i],
                       size: 22,
-                      color: selected ? AppColors.primary : AppColors.textMuted,
+                      color: selected ? AdminTheme.primary : AdminTheme.textMuted,
                     ),
                     const SizedBox(width: AppSpacing.md),
                     Expanded(
                       child: Text(
                         _labels[i],
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: selected ? AppColors.primary : AppColors.textSecondary,
+                          color: selected ? AdminTheme.primary : AdminTheme.textSecondary,
                           fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
                         ),
                       ),
@@ -123,17 +124,17 @@ class AdminShell extends StatelessWidget {
             height: 44,
             width: 44,
             decoration: BoxDecoration(
-              gradient: AppGradients.primary,
-              borderRadius: BorderRadius.circular(AppRadius.sm),
+              color: AdminTheme.primary,
+              borderRadius: BorderRadius.circular(AdminTheme.radiusMd),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.3),
+                  color: AdminTheme.primary.withValues(alpha: 0.3),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
               ],
             ),
-            child: const Icon(Icons.school_rounded, color: AppColors.primaryForeground, size: 24),
+            child: const Icon(Icons.school_rounded, color: AdminTheme.primaryForeground, size: 24),
           ),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
@@ -145,13 +146,13 @@ class AdminShell extends StatelessWidget {
                   'لوحة الإدارة',
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
+                    color: AdminTheme.textPrimary,
                   ),
                 ),
                 Text(
                   'Mada',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppColors.textMuted,
+                    color: AdminTheme.textMuted,
                     fontSize: 12,
                   ),
                 ),
@@ -174,10 +175,10 @@ class AdminShell extends StatelessWidget {
       textDirection: TextDirection.rtl,
       child: Scaffold(
         key: isMobile ? _adminShellScaffoldKey : null,
-        backgroundColor: AppColors.background,
+        backgroundColor: AdminTheme.background,
         drawer: isMobile
             ? Drawer(
-                backgroundColor: AppColors.surface,
+                backgroundColor: AdminTheme.surface,
                 child: SafeArea(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -195,7 +196,7 @@ class AdminShell extends StatelessWidget {
             ? AdminDrawerScope(
                 openDrawer: () => _adminShellScaffoldKey.currentState?.openDrawer(),
                 child: ColoredBox(
-                  color: AppColors.background,
+                  color: AdminTheme.background,
                   child: child,
                 ),
               )
@@ -204,9 +205,9 @@ class AdminShell extends StatelessWidget {
                   Container(
                     width: AdminConstants.sidebarWidth,
                     decoration: BoxDecoration(
-                      color: AppColors.surface,
+                      color: AdminTheme.surface,
                       border: Border(
-                        left: BorderSide(color: AppColors.border.withValues(alpha: 0.4), width: 1),
+                        left: BorderSide(color: AdminTheme.border, width: 1),
                       ),
                       boxShadow: [
                         BoxShadow(
@@ -234,7 +235,7 @@ class AdminShell extends StatelessWidget {
                   ),
                   Expanded(
                     child: ColoredBox(
-                      color: AppColors.background,
+                      color: AdminTheme.background,
                       child: child,
                     ),
                   ),

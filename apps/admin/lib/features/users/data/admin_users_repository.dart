@@ -26,6 +26,7 @@ class AdminUsersRepository {
       id: row['id']?.toString() ?? '',
       name: row['name']?.toString() ?? '—',
       email: row['email']?.toString() ?? '—',
+      username: row['username']?.toString() ?? '—',
       role: row['role']?.toString() ?? 'student',
       createdAt: createdAtStr != null
           ? DateTime.tryParse(createdAtStr) ?? DateTime.now()

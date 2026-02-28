@@ -8,9 +8,11 @@ import 'app/app.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   const env = String.fromEnvironment('ENV', defaultValue: 'dev');
+  const supabaseUrlRaw = String.fromEnvironment('SUPABASE_URL', defaultValue: '');
+  const supabaseAnonKeyRaw = String.fromEnvironment('SUPABASE_ANON_KEY', defaultValue: '');
 
-  var url = String.fromEnvironment('SUPABASE_URL', defaultValue: '').trim();
-  var anonKey = String.fromEnvironment('SUPABASE_ANON_KEY', defaultValue: '').trim();
+  var url = supabaseUrlRaw.trim();
+  var anonKey = supabaseAnonKeyRaw.trim();
 
   if (url.isEmpty || anonKey.isEmpty) {
     try {

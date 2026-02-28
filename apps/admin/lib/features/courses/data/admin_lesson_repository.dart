@@ -24,7 +24,7 @@ class AdminLessonRepository {
   Future<void> insertLesson({
     required String courseId,
     required String titleAr,
-    required String titleEn,
+    String titleEn = '',
     required String videoUrl,
     required int durationSec,
     required int orderIndex,
@@ -32,11 +32,12 @@ class AdminLessonRepository {
     List<String> textFileUrls = const [],
     List<String> textFileNames = const [],
   }) async {
+    final effectiveTitleEn = titleEn.isEmpty ? titleAr : titleEn;
     await _client.from('lessons').insert({
       'course_id': courseId,
       'title': titleAr, // عمود قديم في الجدول (مطلوب)
       'title_ar': titleAr,
-      'title_en': titleEn,
+      'title_en': effectiveTitleEn,
       'video_url': videoUrl,
       'duration_sec': durationSec,
       'order_index': orderIndex,
@@ -44,6 +45,30 @@ class AdminLessonRepository {
       'text_file_urls': textFileUrls,
       'text_file_names': textFileNames,
     });
+  }
+
+  Future<void> updateLessonTitle({
+    required String lessonId,
+    required String titleAr,
+    String? titleEn,
+  }) async {
+    final data = <String, dynamic>{
+      'title': titleAr,
+      'title_ar': titleAr,
+    };
+    if (titleEn != null) data['title_en'] = titleEn;
+    await _client.from('lessons').update(data).eq('id', lessonId);
+  }
+
+  Future<void> updateLessonFree({
+    required String lessonId,
+    required bool isFree,
+  }) async {
+    await _client.from('lessons').update({'is_free': isFree}).eq('id', lessonId);
+  }
+
+  Future<void> deleteLesson(String lessonId) async {
+    await _client.from('lessons').delete().eq('id', lessonId);
   }
 
   Future<void> updateLessonFiles({

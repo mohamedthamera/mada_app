@@ -55,6 +55,110 @@ class _CourseLessonsScreenState extends ConsumerState<CourseLessonsScreen> {
   bool _loading = true;
   String? _error;
 
+  void _confirmDeleteLesson(Lesson lesson) {
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: AlertDialog(
+          title: const Text('حذف الدرس'),
+          content: Text('هل أنت متأكد من حذف الدرس "${lesson.titleAr}"؟'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('إلغاء'),
+            ),
+            FilledButton(
+              style: FilledButton.styleFrom(
+                backgroundColor: Theme.of(ctx).colorScheme.error,
+              ),
+              onPressed: () async {
+                Navigator.of(ctx).pop();
+                try {
+                  await ref.read(adminLessonRepositoryProvider).deleteLesson(lesson.id);
+                  _loadLessons();
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('تم حذف الدرس')),
+                    );
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('خطأ: ${_lessonError(e)}')),
+                    );
+                  }
+                }
+              },
+              child: const Text('حذف'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showEditLessonTitleDialog(Lesson lesson) {
+    final controller = TextEditingController(text: lesson.titleAr);
+    final formKey = GlobalKey<FormState>();
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: AlertDialog(
+          title: const Text('تعديل عنوان الدرس'),
+          content: Form(
+            key: formKey,
+            child: TextFormField(
+              controller: controller,
+              decoration: const InputDecoration(
+                labelText: 'عنوان الدرس *',
+              ),
+              validator: (v) => v == null || v.isEmpty ? 'مطلوب' : null,
+              autofocus: true,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('إلغاء'),
+            ),
+            FilledButton(
+              onPressed: () async {
+                if (!formKey.currentState!.validate()) return;
+                final newTitle = controller.text.trim();
+                if (newTitle == lesson.titleAr) {
+                  Navigator.of(ctx).pop();
+                  return;
+                }
+                try {
+                  await ref.read(adminLessonRepositoryProvider).updateLessonTitle(
+                        lessonId: lesson.id,
+                        titleAr: newTitle,
+                      );
+                  if (ctx.mounted) Navigator.of(ctx).pop();
+                  _loadLessons();
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('تم تحديث عنوان الدرس')),
+                    );
+                  }
+                } catch (e) {
+                  if (ctx.mounted) {
+                    ScaffoldMessenger.of(ctx).showSnackBar(
+                      SnackBar(content: Text('خطأ: ${_lessonError(e)}')),
+                    );
+                  }
+                }
+              },
+              child: const Text('حفظ'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   void _showEditLessonFilesDialog(Lesson lesson) {
     final uploadedTextFileUrls = [...lesson.textFileUrls];
     final uploadedTextFileNames = [...lesson.textFileNames];
@@ -274,7 +378,6 @@ class _CourseLessonsScreenState extends ConsumerState<CourseLessonsScreen> {
 
   void _showAddLessonDialog() {
     final titleAr = TextEditingController();
-    final titleEn = TextEditingController();
     final durationMin = TextEditingController(text: '10');
     final orderIndex = TextEditingController(text: '${_lessons.length + 1}');
     var isFree = false;
@@ -305,16 +408,7 @@ class _CourseLessonsScreenState extends ConsumerState<CourseLessonsScreen> {
                       TextFormField(
                         controller: titleAr,
                         decoration: const InputDecoration(
-                          labelText: 'عنوان الدرس (عربي) *',
-                        ),
-                        validator: (v) =>
-                            v == null || v.isEmpty ? 'مطلوب' : null,
-                      ),
-                      const SizedBox(height: 12),
-                      TextFormField(
-                        controller: titleEn,
-                        decoration: const InputDecoration(
-                          labelText: 'عنوان الدرس (إنجليزي) *',
+                          labelText: 'عنوان الدرس *',
                         ),
                         validator: (v) =>
                             v == null || v.isEmpty ? 'مطلوب' : null,
@@ -333,11 +427,12 @@ class _CourseLessonsScreenState extends ConsumerState<CourseLessonsScreen> {
                                     withData: true,
                                   );
                                   if (result == null ||
-                                      result.files.single.bytes == null) {
+                                      result.files.isEmpty ||
+                                      result.files.first.bytes == null) {
                                     setDialogState(() => uploading = false);
                                     return;
                                   }
-                                  final file = result.files.single;
+                                  final file = result.files.first;
                                   final rawBytes = file.bytes;
                                   if (rawBytes == null) {
                                     setDialogState(() => uploading = false);
@@ -581,7 +676,6 @@ class _CourseLessonsScreenState extends ConsumerState<CourseLessonsScreen> {
                     await ref.read(adminLessonRepositoryProvider).insertLesson(
                           courseId: widget.courseId,
                           titleAr: titleAr.text.trim(),
-                          titleEn: titleEn.text.trim(),
                           videoUrl: uploadedVideoUrl ?? '',
                           durationSec: min * 60,
                           orderIndex: order,
@@ -689,10 +783,47 @@ class _CourseLessonsScreenState extends ConsumerState<CourseLessonsScreen> {
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
+                              Tooltip(
+                                message: l.isFree ? 'مجاني (اضغط للتغيير لمدفوع)' : 'مدفوع (اضغط للتغيير لمجاني)',
+                                child: Switch(
+                                  value: l.isFree,
+                                  onChanged: (value) async {
+                                    final messenger = ScaffoldMessenger.of(context);
+                                    try {
+                                      await ref.read(adminLessonRepositoryProvider).updateLessonFree(
+                                            lessonId: l.id,
+                                            isFree: value,
+                                          );
+                                      _loadLessons();
+                                      if (mounted) {
+                                        messenger.showSnackBar(
+                                          SnackBar(content: Text(value ? 'الدرس أصبح مجانياً' : 'الدرس أصبح مدفوعاً')),
+                                        );
+                                      }
+                                    } catch (e) {
+                                      if (mounted) {
+                                        messenger.showSnackBar(
+                                          SnackBar(content: Text('خطأ: ${_lessonError(e)}')),
+                                        );
+                                      }
+                                    }
+                                  },
+                                ),
+                              ),
+                              IconButton(
+                                tooltip: 'تعديل عنوان الدرس',
+                                onPressed: () => _showEditLessonTitleDialog(l),
+                                icon: const Icon(Icons.edit),
+                              ),
                               IconButton(
                                 tooltip: 'ملفات الدرس',
                                 onPressed: () => _showEditLessonFilesDialog(l),
                                 icon: const Icon(Icons.attach_file),
+                              ),
+                              IconButton(
+                                tooltip: 'حذف الدرس',
+                                onPressed: () => _confirmDeleteLesson(l),
+                                icon: const Icon(Icons.delete_outline, color: Colors.red),
                               ),
                               const Icon(Icons.chevron_left),
                             ],

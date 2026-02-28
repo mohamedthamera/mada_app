@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared/shared.dart';
 import '../../../app/di.dart';
 
@@ -62,14 +63,25 @@ class AdminBooksRepository {
     return Book.fromJson(Map<String, dynamic>.from(res as Map));
   }
 
-  /// Upload cover; returns storage path (e.g. covers/xyz.jpg). Enforces jpg/jpeg/png/webp.
+  /// Upload cover; returns storage path (e.g. covers/1234567890.jpg). Enforces jpg/jpeg/png/webp.
   Future<String> uploadCover(Uint8List bytes, String fileName) async {
-    final ext = fileName.split('.').last.toLowerCase();
-    if (!_coverExtensions.contains(ext)) {
-      throw ArgumentError('Cover must be jpg, jpeg, png or webp');
-    }
-    final path = 'covers/$fileName';
-    await _client.storage.from(_coverBucket).uploadBinary(path, bytes);
+    final rawExt = fileName.contains('.') ? fileName.split('.').last.toLowerCase() : '';
+    final ext = _coverExtensions.contains(rawExt) ? rawExt : 'jpg';
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    final path = 'covers/$timestamp.$ext';
+    final contentType = ext == 'png'
+        ? 'image/png'
+        : ext == 'webp'
+            ? 'image/webp'
+            : 'image/jpeg';
+    await _client.storage.from(_coverBucket).uploadBinary(
+          path,
+          bytes,
+          fileOptions: FileOptions(
+            contentType: contentType,
+            upsert: true,
+          ),
+        );
     return path;
   }
 

@@ -13,6 +13,7 @@ import 'data/video_upload_repository.dart';
 import 'presentation/admin_course_providers.dart';
 import '../../core/constants/admin_breakpoints.dart';
 import '../../core/widgets/admin_widgets.dart';
+import '../../ui_system/app_theme.dart';
 
 String _courseLessonError(dynamic e) {
   if (e is PostgrestException) {
@@ -121,20 +122,17 @@ class CoursesScreen extends ConsumerWidget {
 
   void _showAddCourseDialog(BuildContext context, WidgetRef ref) {
     final titleAr = TextEditingController();
-    final titleEn = TextEditingController();
     final descAr = TextEditingController();
-    final descEn = TextEditingController();
     final thumbnailUrl = TextEditingController();
     String level = 'مبتدئ';
     final formKey = GlobalKey<FormState>();
     bool thumbnailUploading = false;
     String? thumbnailUploadedName;
 
-    // قائمة الدروس: كل عنصر = عنوان عربي، إنجليزي، مدة، فيديو (بايتات + اسم) أو رابط
+    // قائمة الدروس: عنوان عربي، مدة، فيديو (بايتات + اسم) أو رابط
     final lessonEntries = <_LessonEntry>[
       _LessonEntry(
         titleAr: TextEditingController(),
-        titleEn: TextEditingController(),
         durationMin: TextEditingController(text: '10'),
         videoUrl: TextEditingController(),
       ),
@@ -163,17 +161,7 @@ class CoursesScreen extends ConsumerWidget {
                           TextFormField(
                             controller: titleAr,
                             decoration: const InputDecoration(
-                              labelText: 'العنوان (عربي) *',
-                              isDense: true,
-                            ),
-                            validator: (v) =>
-                                v == null || v.isEmpty ? 'مطلوب' : null,
-                          ),
-                          const SizedBox(height: adminFormFieldSpacing),
-                          TextFormField(
-                            controller: titleEn,
-                            decoration: const InputDecoration(
-                              labelText: 'العنوان (إنجليزي) *',
+                              labelText: 'العنوان *',
                               isDense: true,
                             ),
                             validator: (v) =>
@@ -183,19 +171,7 @@ class CoursesScreen extends ConsumerWidget {
                           TextFormField(
                             controller: descAr,
                             decoration: const InputDecoration(
-                              labelText: 'الوصف (عربي) *',
-                              isDense: true,
-                              alignLabelWithHint: true,
-                            ),
-                            maxLines: 2,
-                            validator: (v) =>
-                                v == null || v.isEmpty ? 'مطلوب' : null,
-                          ),
-                          const SizedBox(height: adminFormFieldSpacing),
-                          TextFormField(
-                            controller: descEn,
-                            decoration: const InputDecoration(
-                              labelText: 'الوصف (إنجليزي) *',
+                              labelText: 'الوصف *',
                               isDense: true,
                               alignLabelWithHint: true,
                             ),
@@ -231,11 +207,12 @@ class CoursesScreen extends ConsumerWidget {
                                             withData: true,
                                           );
                                           if (result == null ||
-                                              result.files.single.bytes == null) {
+                                              result.files.isEmpty ||
+                                              result.files.first.bytes == null) {
                                             setDialogState(() => thumbnailUploading = false);
                                             return;
                                           }
-                                          final file = result.files.single;
+                                          final file = result.files.first;
                                           final bytes = Uint8List.fromList(file.bytes!);
                                           final name = file.name.isEmpty ? 'cover.jpg' : file.name;
                                           final url = await ref
@@ -306,7 +283,6 @@ class CoursesScreen extends ConsumerWidget {
                                   setDialogState(() {
                                     lessonEntries.add(_LessonEntry(
                                       titleAr: TextEditingController(),
-                                      titleEn: TextEditingController(),
                                       durationMin: TextEditingController(text: '10'),
                                       videoUrl: TextEditingController(),
                                     ));
@@ -352,21 +328,20 @@ class CoursesScreen extends ConsumerWidget {
                   if (!formKey.currentState!.validate()) return;
                   for (var i = 0; i < lessonEntries.length; i++) {
                     final le = lessonEntries[i];
-                    final titleAr = le.titleAr.text.trim();
-                    final titleEn = le.titleEn.text.trim();
+                    final lessonTitleAr = le.titleAr.text.trim();
                     final url = le.videoUrl.text.trim();
                     final isCompletelyEmpty =
-                        titleAr.isEmpty && titleEn.isEmpty && le.videoBytes == null && url.isEmpty;
+                        lessonTitleAr.isEmpty && le.videoBytes == null && url.isEmpty;
 
                     // إذا كان الدرس فارغاً تماماً نتجاهله (لا نفرض تعبئته)
                     if (isCompletelyEmpty) {
                       continue;
                     }
 
-                    if (titleAr.isEmpty || titleEn.isEmpty) {
+                    if (lessonTitleAr.isEmpty) {
                       if (ctx.mounted) {
                         ScaffoldMessenger.of(ctx).showSnackBar(
-                          SnackBar(content: Text('الدرس ${i + 1}: أدخل العنوان بالعربي والإنجليزي')),
+                          SnackBar(content: Text('الدرس ${i + 1}: أدخل عنوان الدرس')),
                         );
                       }
                       return;
@@ -381,12 +356,14 @@ class CoursesScreen extends ConsumerWidget {
                       return;
                     }
                   }
-                  try {
+                    try {
+                    final courseTitleAr = titleAr.text.trim();
+                    final courseDescAr = descAr.text.trim();
                     final courseId = await ref.read(adminCourseRepositoryProvider).insertCourse(
-                          titleAr: titleAr.text.trim(),
-                          titleEn: titleEn.text.trim(),
-                          descAr: descAr.text.trim(),
-                          descEn: descEn.text.trim(),
+                          titleAr: courseTitleAr,
+                          titleEn: courseTitleAr,
+                          descAr: courseDescAr,
+                          descEn: courseDescAr,
                           categoryId: _defaultCategoryId,
                           level: level,
                           thumbnailUrl: thumbnailUrl.text.trim(),
@@ -396,11 +373,10 @@ class CoursesScreen extends ConsumerWidget {
                     var order = 1;
                     for (var i = 0; i < lessonEntries.length; i++) {
                       final le = lessonEntries[i];
-                      final titleAr = le.titleAr.text.trim();
-                      final titleEn = le.titleEn.text.trim();
+                      final lessonTitleAr = le.titleAr.text.trim();
                       final url = le.videoUrl.text.trim();
                       final isCompletelyEmpty =
-                          titleAr.isEmpty && titleEn.isEmpty && le.videoBytes == null && url.isEmpty;
+                          lessonTitleAr.isEmpty && le.videoBytes == null && url.isEmpty;
 
                       // تجاهل الدروس الفارغة تماماً
                       if (isCompletelyEmpty) continue;
@@ -418,8 +394,7 @@ class CoursesScreen extends ConsumerWidget {
                       final min = int.tryParse(le.durationMin.text) ?? 10;
                       await lessonRepo.insertLesson(
                         courseId: courseId,
-                        titleAr: titleAr,
-                        titleEn: titleEn,
+                        titleAr: lessonTitleAr,
                         videoUrl: videoUrl,
                         durationSec: min * 60,
                         orderIndex: order++,
@@ -484,12 +459,7 @@ class CoursesScreen extends ConsumerWidget {
             const SizedBox(height: 8),
             TextFormField(
               controller: le.titleAr,
-              decoration: const InputDecoration(labelText: 'عنوان الدرس (عربي) *'),
-            ),
-            const SizedBox(height: 8),
-            TextFormField(
-              controller: le.titleEn,
-              decoration: const InputDecoration(labelText: 'عنوان الدرس (إنجليزي) *'),
+              decoration: const InputDecoration(labelText: 'عنوان الدرس *'),
             ),
             const SizedBox(height: 8),
             TextFormField(
@@ -500,18 +470,26 @@ class CoursesScreen extends ConsumerWidget {
             const SizedBox(height: 8),
             OutlinedButton.icon(
               onPressed: () async {
-                final result = await FilePicker.platform.pickFiles(
-                  type: FileType.video,
-                  allowMultiple: false,
-                  withData: true,
-                );
-                if (result == null || result.files.single.bytes == null) return;
-                final file = result.files.single;
-                setDialogState(() {
-                  le.videoBytes = Uint8List.fromList(file.bytes!);
-                  le.videoFileName = file.name.isEmpty ? 'video.mp4' : file.name;
-                  le.videoUrl.clear();
-                });
+                try {
+                  final result = await FilePicker.platform.pickFiles(
+                    type: FileType.video,
+                    allowMultiple: false,
+                    withData: true,
+                  );
+                  if (result == null || result.files.isEmpty || result.files.first.bytes == null) return;
+                  final file = result.files.first;
+                  setDialogState(() {
+                    le.videoBytes = Uint8List.fromList(file.bytes!);
+                    le.videoFileName = file.name.isEmpty ? 'video.mp4' : file.name;
+                    le.videoUrl.clear();
+                  });
+                } catch (e) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('فشل اختيار الفيديو: $e'), backgroundColor: Colors.red.shade700),
+                    );
+                  }
+                }
               },
               icon: const Icon(Icons.video_file, size: 20),
               label: Text(le.videoFileName ?? 'رفع فيديو'),
@@ -552,11 +530,11 @@ class CoursesScreen extends ConsumerWidget {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        backgroundColor: AppColors.background,
+        backgroundColor: AdminTheme.background,
         appBar: AppBar(
           leading: adminAppBarLeading(context),
           title: const Text('إدارة الدورات'),
-          backgroundColor: AppColors.background,
+          backgroundColor: AdminTheme.background,
           elevation: 0,
           scrolledUnderElevation: 0,
         ),
@@ -668,9 +646,7 @@ class CoursesScreen extends ConsumerWidget {
     Course course,
   ) {
     final titleAr = TextEditingController(text: course.titleAr);
-    final titleEn = TextEditingController(text: course.titleEn);
     final descAr = TextEditingController(text: course.descAr);
-    final descEn = TextEditingController(text: course.descEn);
     final thumbnailUrl = TextEditingController(text: course.thumbnailUrl);
     String level = course.level;
     final formKey = GlobalKey<FormState>();
@@ -693,16 +669,7 @@ class CoursesScreen extends ConsumerWidget {
                     TextFormField(
                       controller: titleAr,
                       decoration: const InputDecoration(
-                        labelText: 'العنوان (عربي) *',
-                      ),
-                      validator: (v) =>
-                          v == null || v.isEmpty ? 'مطلوب' : null,
-                    ),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: titleEn,
-                      decoration: const InputDecoration(
-                        labelText: 'العنوان (إنجليزي) *',
+                        labelText: 'العنوان *',
                       ),
                       validator: (v) =>
                           v == null || v.isEmpty ? 'مطلوب' : null,
@@ -711,17 +678,7 @@ class CoursesScreen extends ConsumerWidget {
                     TextFormField(
                       controller: descAr,
                       decoration: const InputDecoration(
-                        labelText: 'الوصف (عربي) *',
-                      ),
-                      maxLines: 2,
-                      validator: (v) =>
-                          v == null || v.isEmpty ? 'مطلوب' : null,
-                    ),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: descEn,
-                      decoration: const InputDecoration(
-                        labelText: 'الوصف (إنجليزي) *',
+                        labelText: 'الوصف *',
                       ),
                       maxLines: 2,
                       validator: (v) =>
@@ -766,12 +723,14 @@ class CoursesScreen extends ConsumerWidget {
               onPressed: () async {
                 if (!formKey.currentState!.validate()) return;
                 try {
+                  final t = titleAr.text.trim();
+                  final d = descAr.text.trim();
                   await ref.read(adminCourseRepositoryProvider).updateCourse(
                         id: course.id,
-                        titleAr: titleAr.text.trim(),
-                        titleEn: titleEn.text.trim(),
-                        descAr: descAr.text.trim(),
-                        descEn: descEn.text.trim(),
+                        titleAr: t,
+                        titleEn: t,
+                        descAr: d,
+                        descEn: d,
                         categoryId: course.categoryId,
                         level: level,
                         thumbnailUrl: thumbnailUrl.text.trim(),
@@ -862,13 +821,11 @@ class CoursesScreen extends ConsumerWidget {
 class _LessonEntry {
   _LessonEntry({
     required this.titleAr,
-    required this.titleEn,
     required this.durationMin,
     required this.videoUrl,
   });
 
   final TextEditingController titleAr;
-  final TextEditingController titleEn;
   final TextEditingController durationMin;
   final TextEditingController videoUrl;
   Uint8List? videoBytes;

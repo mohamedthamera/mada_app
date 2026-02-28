@@ -6,6 +6,12 @@ final profileRepositoryProvider = Provider<ProfileRepository>(
   (ref) => ProfileRepository(ref.read(supabaseClientProvider)),
 );
 
+/// بيانات الملف الشخصي (الاسم، الهاتف، اسم المستخدم) — يُحدَّث عند تغيير المستخدم
+final profileDataProvider = FutureProvider<Map<String, String?>>((ref) async {
+  final repo = ref.watch(profileRepositoryProvider);
+  return repo.getProfileData();
+});
+
 class ProfileRepository {
   ProfileRepository(this._client);
 
@@ -13,23 +19,24 @@ class ProfileRepository {
 
   String? get currentUserId => _client.auth.currentUser?.id;
 
-  /// جلب الاسم ورقم الهاتف من profiles
+  /// جلب الاسم ورقم الهاتف واسم المستخدم من profiles
   Future<Map<String, String?>> getProfileData() async {
     final uid = currentUserId;
-    if (uid == null) return {'name': null, 'phone': null};
+    if (uid == null) return {'name': null, 'phone': null, 'username': null};
     try {
       final res = await _client
           .from('profiles')
-          .select('name, phone')
+          .select('name, phone, username')
           .eq('id', uid)
           .maybeSingle();
-      if (res == null) return {'name': null, 'phone': null};
+      if (res == null) return {'name': null, 'phone': null, 'username': null};
       return {
         'name': res['name']?.toString().trim(),
         'phone': res['phone']?.toString().trim(),
+        'username': res['username']?.toString().trim(),
       };
     } catch (_) {
-      return {'name': null, 'phone': null};
+      return {'name': null, 'phone': null, 'username': null};
     }
   }
 

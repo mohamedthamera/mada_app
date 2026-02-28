@@ -9,14 +9,30 @@ class AdminJobsRepository {
   AdminJobsRepository(this._client);
   final dynamic _client;
 
+  /// جلب قائمة الوظائف: محاولة RPC أولاً ثم الاستعلام المباشر كبديل. لا يرمي أبداً.
   Future<List<Map<String, dynamic>>> fetchJobs() async {
-    final res = await _client
-        .from('jobs')
-        .select()
-        .order('created_at', ascending: false);
-    return (res as List)
-        .map((e) => e as Map<String, dynamic>)
-        .toList();
+    try {
+      final res = await _client.rpc('admin_list_jobs');
+      if (res == null) return [];
+      final list = res is List ? res : <dynamic>[];
+      return list
+          .map((e) => e is Map ? Map<String, dynamic>.from(e) : null)
+          .whereType<Map<String, dynamic>>()
+          .where((m) => m['id'] != null)
+          .toList();
+    } catch (_) {
+      try {
+        final res = await _client.from('jobs').select().order('created_at', ascending: false);
+        if (res == null || res is! List) return [];
+        final list = res;
+        return list
+            .map<Map<String, dynamic>?>((e) => e is Map ? Map<String, dynamic>.from(e) : null)
+            .whereType<Map<String, dynamic>>()
+            .toList();
+      } catch (_) {
+        return [];
+      }
+    }
   }
 
   Future<void> insertJob({
