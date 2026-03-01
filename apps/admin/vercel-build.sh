@@ -1,14 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-FLUTTER_TAR="flutter_linux_stable.tar.xz"
-FLUTTER_URL="https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/${FLUTTER_TAR}"
+FLUTTER_VERSION="3.29.2"
+ARCHIVE="flutter_linux_${FLUTTER_VERSION}-stable.tar.xz"
+URL="https://github.com/flutter/flutter/releases/download/${FLUTTER_VERSION}-stable/${ARCHIVE}"
 
-echo "==> Downloading Flutter (stable)..."
-curl -L -o "$FLUTTER_TAR" "$FLUTTER_URL"
+echo "==> Downloading Flutter ${FLUTTER_VERSION} ..."
+curl -L -o "$ARCHIVE" "$URL"
 
 echo "==> Extracting..."
-tar -xf "$FLUTTER_TAR"
+tar -xf "$ARCHIVE"
 
 export PATH="$PWD/flutter/bin:$PATH"
 
