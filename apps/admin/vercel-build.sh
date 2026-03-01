@@ -1,20 +1,30 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-echo "==> Downloading latest Flutter (stable)..."
+echo "==> PWD: $(pwd)"
+echo "==> Listing files:"
+ls -la
 
-FLUTTER_TAR="flutter_linux_stable.tar.xz"
-FLUTTER_URL="https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/${FLUTTER_TAR}"
-
-curl -L -o "$FLUTTER_TAR" "$FLUTTER_URL"
-tar -xf "$FLUTTER_TAR"
+echo "==> Downloading Flutter stable..."
+curl -L https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_stable.tar.xz -o flutter.tar.xz
+tar -xf flutter.tar.xz
 
 export PATH="$PWD/flutter/bin:$PATH"
 
-echo "==> Flutter & Dart versions:"
-flutter --version
-dart --version
-
+# منع أي رسائل/تفاعل مزعج داخل CI
+flutter config --no-analytics --no-cli-animations
 flutter config --enable-web
-flutter pub get
-flutter build web --release --base-href "/"
+
+echo "==> Flutter/Dart versions:"
+flutter --version
+dart --version || true
+
+echo "==> Pub get..."
+flutter pub get -v
+
+echo "==> Build web..."
+flutter build web --release --base-href "/" -v
+
+echo "==> Build output:"
+ls -la build || true
+ls -la build/web || true
