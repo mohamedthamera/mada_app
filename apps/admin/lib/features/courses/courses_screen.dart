@@ -484,8 +484,8 @@ class CoursesScreen extends ConsumerWidget {
                     le.videoUrl.clear();
                   });
                 } catch (e) {
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
+                  if (ctx.mounted) {
+                    ScaffoldMessenger.of(ctx).showSnackBar(
                       SnackBar(content: Text('فشل اختيار الفيديو: $e'), backgroundColor: Colors.red.shade700),
                     );
                   }
