@@ -1,30 +1,15 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -e
 
-echo "==> PWD: $(pwd)"
-echo "==> Listing files:"
-ls -la
+FLUTTER_VERSION="3.41.3"
 
-echo "==> Downloading Flutter stable..."
-curl -L https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_stable.tar.xz -o flutter.tar.xz
-tar -xf flutter.tar.xz
+# Install Flutter (and Dart) inside Vercel environment
+git clone https://github.com/flutter/flutter.git --depth 1 -b "$FLUTTER_VERSION" flutter_sdk
+export PATH="$PWD/flutter_sdk/bin:$PATH"
 
-export PATH="$PWD/flutter/bin:$PATH"
-
-# منع أي رسائل/تفاعل مزعج داخل CI
-flutter config --no-analytics --no-cli-animations
-flutter config --enable-web
-
-echo "==> Flutter/Dart versions:"
 flutter --version
-dart --version || true
+dart --version
 
-echo "==> Pub get..."
-flutter pub get -v
-
-echo "==> Build web..."
-flutter build web --release --base-href "/" -v
-
-echo "==> Build output:"
-ls -la build || true
-ls -la build/web || true
+# We are already inside apps/admin (Root Directory)
+flutter pub get
+flutter build web --release
