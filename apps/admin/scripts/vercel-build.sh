@@ -1,21 +1,19 @@
+cat > vercel-build.sh << 'EOF'
 #!/usr/bin/env bash
-set -euo pipefail
+set -e
 
-FLUTTER_VERSION="3.29.0"
-FLUTTER_TAR="flutter_linux_${FLUTTER_VERSION}-stable.tar.xz"
-FLUTTER_URL="https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/${FLUTTER_TAR}"
+FLUTTER_VERSION="3.41.3"
 
-echo "Downloading Flutter: $FLUTTER_URL"
-curl -L -o "$FLUTTER_TAR" "$FLUTTER_URL"
-
-echo "Extracting..."
-tar -xf "$FLUTTER_TAR"
-
+# Install Flutter (and Dart) inside Vercel build environment
+git clone https://github.com/flutter/flutter.git --depth 1 -b "$FLUTTER_VERSION" flutter
 export PATH="$PWD/flutter/bin:$PATH"
 
-echo "Flutter version:"
 flutter --version
+dart --version
 
-flutter config --enable-web
+# Build Flutter Web (admin)
+cd apps/admin
 flutter pub get
-flutter build web --release --base-href "/"
+flutter build web --release \
+  --dart-define=SUPABASE_URL=$SUPABASE_URL \
+  --dart-define=SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY
