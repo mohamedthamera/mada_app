@@ -9,6 +9,7 @@ export PATH="$PWD/flutter/bin:$PATH"
 flutter --version
 dart --version
 
+cd apps/admin
 flutter pub get
 flutter build web --release \
   --dart-define=SUPABASE_URL="$SUPABASE_URL" \
