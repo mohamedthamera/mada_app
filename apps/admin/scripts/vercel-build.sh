@@ -9,7 +9,11 @@ export PATH="$PWD/flutter/bin:$PATH"
 flutter --version
 dart --version
 
-cd apps/admin
+cat > env.dev <<EOF
+SUPABASE_URL=$SUPABASE_URL
+SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY
+EOF
+
 flutter pub get
 flutter build web --release \
   --dart-define=SUPABASE_URL="$SUPABASE_URL" \
