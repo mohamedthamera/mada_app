@@ -11,6 +11,7 @@ import '../features/jobs/jobs_screen.dart';
 import '../features/banners/banners_screen.dart';
 import '../features/books/books_screen.dart';
 import '../features/influencers/influencers_screen.dart';
+import '../features/notifications/notifications_screen.dart';
 import '../features/dashboard/admin_shell.dart';
 
 String? _cachedUserId;
@@ -104,6 +105,10 @@ final adminRouter = GoRouter(
         GoRoute(
           path: '/influencers',
           builder: (context, state) => const InfluencersScreen(),
+        ),
+        GoRoute(
+          path: '/notifications',
+          builder: (context, state) => const AdminNotificationsScreen(),
         ),
       ],
     ),

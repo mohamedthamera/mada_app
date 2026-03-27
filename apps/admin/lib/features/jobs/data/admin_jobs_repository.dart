@@ -22,11 +22,16 @@ class AdminJobsRepository {
           .toList();
     } catch (_) {
       try {
-        final res = await _client.from('jobs').select().order('created_at', ascending: false);
+        final res = await _client
+            .from('jobs')
+            .select()
+            .order('created_at', ascending: false);
         if (res == null || res is! List) return [];
         final list = res;
         return list
-            .map<Map<String, dynamic>?>((e) => e is Map ? Map<String, dynamic>.from(e) : null)
+            .map<Map<String, dynamic>?>(
+              (e) => e is Map ? Map<String, dynamic>.from(e) : null,
+            )
             .whereType<Map<String, dynamic>>()
             .toList();
       } catch (_) {
@@ -46,6 +51,8 @@ class AdminJobsRepository {
     String? workDays,
     String? requirements,
     String? applyUrl,
+    String? whatsappNumber,
+    String? applyMessage,
   }) async {
     await _client.from('jobs').insert({
       'title_ar': titleAr,
@@ -58,6 +65,8 @@ class AdminJobsRepository {
       'work_days': workDays,
       'requirements': requirements,
       'apply_url': applyUrl,
+      'whatsapp_number': whatsappNumber,
+      'apply_message': applyMessage,
     });
   }
 
@@ -73,23 +82,29 @@ class AdminJobsRepository {
     String? workDays,
     String? requirements,
     String? applyUrl,
+    String? whatsappNumber,
+    String? applyMessage,
   }) async {
-    await _client.from('jobs').update({
-      'title_ar': titleAr,
-      'company_name': companyName,
-      'location': location,
-      'job_type': jobType,
-      'description_ar': descriptionAr,
-      'salary': salary,
-      'work_mode': workMode,
-      'work_days': workDays,
-      'requirements': requirements,
-      'apply_url': applyUrl,
-    }).eq('id', id);
+    await _client
+        .from('jobs')
+        .update({
+          'title_ar': titleAr,
+          'company_name': companyName,
+          'location': location,
+          'job_type': jobType,
+          'description_ar': descriptionAr,
+          'salary': salary,
+          'work_mode': workMode,
+          'work_days': workDays,
+          'requirements': requirements,
+          'apply_url': applyUrl,
+          'whatsapp_number': whatsappNumber,
+          'apply_message': applyMessage,
+        })
+        .eq('id', id);
   }
 
   Future<void> deleteJob(String id) async {
     await _client.from('jobs').delete().eq('id', id);
   }
 }
-

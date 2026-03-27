@@ -6,7 +6,8 @@ import '../../core/constants/admin_constants.dart';
 import '../../core/widgets/admin_widgets.dart';
 import '../../ui_system/app_theme.dart';
 
-final GlobalKey<ScaffoldState> _adminShellScaffoldKey = GlobalKey<ScaffoldState>();
+final GlobalKey<ScaffoldState> _adminShellScaffoldKey =
+    GlobalKey<ScaffoldState>();
 
 class AdminShell extends StatelessWidget {
   const AdminShell({super.key, required this.child});
@@ -23,6 +24,7 @@ class AdminShell extends StatelessWidget {
     '/subscriptions',
     '/banners',
     '/influencers',
+    '/notifications',
   ];
 
   static const _labels = [
@@ -35,6 +37,7 @@ class AdminShell extends StatelessWidget {
     'الاشتراكات',
     'البنرات',
     'أكواد المؤثرين',
+    'إرسال إشعار',
   ];
 
   static const _icons = [
@@ -47,6 +50,7 @@ class AdminShell extends StatelessWidget {
     Icons.subscriptions_outlined,
     Icons.image_outlined,
     Icons.card_giftcard_outlined,
+    Icons.notifications_outlined,
   ];
 
   static const _iconsSelected = [
@@ -59,11 +63,19 @@ class AdminShell extends StatelessWidget {
     Icons.subscriptions,
     Icons.image,
     Icons.card_giftcard,
+    Icons.notifications,
   ];
 
-  Widget _buildNavList(BuildContext context, int currentIndex, VoidCallback? onNavTap) {
+  Widget _buildNavList(
+    BuildContext context,
+    int currentIndex,
+    VoidCallback? onNavTap,
+  ) {
     return ListView(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.sm),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.sm,
+      ),
       children: List.generate(_routes.length, (i) {
         final selected = currentIndex == i;
         return Padding(
@@ -78,14 +90,20 @@ class AdminShell extends StatelessWidget {
               borderRadius: BorderRadius.circular(AdminTheme.radiusMd),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 150),
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm + 2),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.md,
+                  vertical: AppSpacing.sm + 2,
+                ),
                 decoration: BoxDecoration(
                   color: selected
                       ? AdminTheme.primary.withValues(alpha: 0.12)
                       : Colors.transparent,
                   borderRadius: BorderRadius.circular(AdminTheme.radiusMd),
                   border: selected
-                      ? Border.all(color: AdminTheme.primary.withValues(alpha: 0.35), width: 1)
+                      ? Border.all(
+                          color: AdminTheme.primary.withValues(alpha: 0.35),
+                          width: 1,
+                        )
                       : null,
                 ),
                 child: Row(
@@ -93,15 +111,21 @@ class AdminShell extends StatelessWidget {
                     Icon(
                       selected ? _iconsSelected[i] : _icons[i],
                       size: 22,
-                      color: selected ? AdminTheme.primary : AdminTheme.textMuted,
+                      color: selected
+                          ? AdminTheme.primary
+                          : AdminTheme.textMuted,
                     ),
                     const SizedBox(width: AppSpacing.md),
                     Expanded(
                       child: Text(
                         _labels[i],
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: selected ? AdminTheme.primary : AdminTheme.textSecondary,
-                          fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+                          color: selected
+                              ? AdminTheme.primary
+                              : AdminTheme.textSecondary,
+                          fontWeight: selected
+                              ? FontWeight.w600
+                              : FontWeight.w500,
                         ),
                       ),
                     ),
@@ -134,7 +158,11 @@ class AdminShell extends StatelessWidget {
                 ),
               ],
             ),
-            child: const Icon(Icons.school_rounded, color: AdminTheme.primaryForeground, size: 24),
+            child: const Icon(
+              Icons.school_rounded,
+              color: AdminTheme.primaryForeground,
+              size: 24,
+            ),
           ),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
@@ -186,7 +214,13 @@ class AdminShell extends StatelessWidget {
                       const SizedBox(height: AppSpacing.lg),
                       _buildSidebarHeader(context),
                       const SizedBox(height: AppSpacing.lg),
-                      Expanded(child: _buildNavList(context, currentIndex, () => Navigator.of(context).pop())),
+                      Expanded(
+                        child: _buildNavList(
+                          context,
+                          currentIndex,
+                          () => Navigator.of(context).pop(),
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -194,11 +228,9 @@ class AdminShell extends StatelessWidget {
             : null,
         body: isMobile
             ? AdminDrawerScope(
-                openDrawer: () => _adminShellScaffoldKey.currentState?.openDrawer(),
-                child: ColoredBox(
-                  color: AdminTheme.background,
-                  child: child,
-                ),
+                openDrawer: () =>
+                    _adminShellScaffoldKey.currentState?.openDrawer(),
+                child: ColoredBox(color: AdminTheme.background, child: child),
               )
             : Row(
                 children: [
@@ -227,7 +259,9 @@ class AdminShell extends StatelessWidget {
                           const SizedBox(height: AppSpacing.lg),
                           const Divider(height: 1),
                           const SizedBox(height: AppSpacing.sm),
-                          Expanded(child: _buildNavList(context, currentIndex, null)),
+                          Expanded(
+                            child: _buildNavList(context, currentIndex, null),
+                          ),
                           const SizedBox(height: AppSpacing.md),
                         ],
                       ),

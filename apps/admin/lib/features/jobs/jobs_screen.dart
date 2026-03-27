@@ -52,11 +52,15 @@ class AdminJobsScreen extends ConsumerWidget {
               Expanded(
                 child: AdminCard(
                   padding: const EdgeInsets.all(16),
-                  child: ref.watch(adminJobsProvider).when(
+                  child: ref
+                      .watch(adminJobsProvider)
+                      .when(
                         data: (jobs) {
                           if (jobs.isEmpty) {
                             return const Center(
-                              child: Text('لا توجد وظائف حالياً. اضغط «إضافة وظيفة» لإنشاء أول وظيفة.'),
+                              child: Text(
+                                'لا توجد وظائف حالياً. اضغط «إضافة وظيفة» لإنشاء أول وظيفة.',
+                              ),
                             );
                           }
                           return ListView.builder(
@@ -68,14 +72,20 @@ class AdminJobsScreen extends ConsumerWidget {
                                 child: Padding(
                                   padding: const EdgeInsets.all(16),
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Row(
                                         children: [
                                           Expanded(
                                             child: Text(
-                                              _str(j, 'title_ar').isEmpty ? '—' : _str(j, 'title_ar'),
-                                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                              _str(j, 'title_ar').isEmpty
+                                                  ? '—'
+                                                  : _str(j, 'title_ar'),
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .titleMedium
+                                                  ?.copyWith(
                                                     fontWeight: FontWeight.w600,
                                                   ),
                                             ),
@@ -83,30 +93,80 @@ class AdminJobsScreen extends ConsumerWidget {
                                           IconButton(
                                             tooltip: 'تعديل',
                                             icon: const Icon(Icons.edit),
-                                            onPressed: () => _showEditJobDialog(context, ref, j),
+                                            onPressed: () => _showEditJobDialog(
+                                              context,
+                                              ref,
+                                              j,
+                                            ),
                                           ),
                                           IconButton(
                                             tooltip: 'حذف',
-                                            icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
+                                            icon: const Icon(
+                                              Icons.delete_outline,
+                                              color: Colors.redAccent,
+                                            ),
                                             onPressed: () {
                                               final id = _str(j, 'id');
-                                              if (id.isNotEmpty) _confirmDeleteJob(context, ref, id);
+                                              if (id.isNotEmpty)
+                                                _confirmDeleteJob(
+                                                  context,
+                                                  ref,
+                                                  id,
+                                                );
                                             },
                                           ),
                                         ],
                                       ),
                                       const SizedBox(height: 8),
-                                      Text('الشركة: ${_str(j, 'company_name').isEmpty ? '—' : _str(j, 'company_name')}',
-                                          style: Theme.of(context).textTheme.bodyMedium),
-                                      Text('الموقع: ${_str(j, 'location').isEmpty ? '—' : _str(j, 'location')}',
-                                          style: Theme.of(context).textTheme.bodyMedium),
-                                      Text('النوع: ${_jobTypeLabel(_str(j, 'job_type'))}',
-                                          style: Theme.of(context).textTheme.bodyMedium),
+                                      Text(
+                                        'الشركة: ${_str(j, 'company_name').isEmpty ? '—' : _str(j, 'company_name')}',
+                                        style: Theme.of(
+                                          context,
+                                        ).textTheme.bodyMedium,
+                                      ),
+                                      Text(
+                                        'الموقع: ${_str(j, 'location').isEmpty ? '—' : _str(j, 'location')}',
+                                        style: Theme.of(
+                                          context,
+                                        ).textTheme.bodyMedium,
+                                      ),
+                                      Text(
+                                        'النوع: ${_jobTypeLabel(_str(j, 'job_type'))}',
+                                        style: Theme.of(
+                                          context,
+                                        ).textTheme.bodyMedium,
+                                      ),
                                       if (_str(j, 'apply_url').isNotEmpty)
-                                        Text('رابط التقديم: ${_str(j, 'apply_url')}',
-                                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                                  color: AdminTheme.textMuted,
-                                                )),
+                                        Text(
+                                          'رابط التقديم: ${_str(j, 'apply_url')}',
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodySmall
+                                              ?.copyWith(
+                                                color: AdminTheme.textMuted,
+                                              ),
+                                        ),
+                                      if (_str(j, 'whatsapp_number').isNotEmpty)
+                                        Row(
+                                          children: [
+                                            Icon(
+                                              Icons.chat_rounded,
+                                              size: 16,
+                                              color: Colors.green.shade700,
+                                            ),
+                                            const SizedBox(width: 4),
+                                            Text(
+                                              'واتساب التقديم: ${_str(j, 'whatsapp_number')}',
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .bodySmall
+                                                  ?.copyWith(
+                                                    color:
+                                                        Colors.green.shade700,
+                                                  ),
+                                            ),
+                                          ],
+                                        ),
                                     ],
                                   ),
                                 ),
@@ -116,28 +176,41 @@ class AdminJobsScreen extends ConsumerWidget {
                         },
                         loading: () =>
                             const Center(child: CircularProgressIndicator()),
-                        error: (e, _) =>
-                            Center(
-                              child: Padding(
-                                padding: const EdgeInsets.all(24),
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Icon(Icons.error_outline, size: 48, color: AdminTheme.error),
-                                    const SizedBox(height: 16),
-                                    Text('تعذر تحميل الوظائف', style: Theme.of(context).textTheme.titleMedium),
-                                    const SizedBox(height: 8),
-                                    Text('$e', style: Theme.of(context).textTheme.bodySmall, textAlign: TextAlign.center),
-                                    const SizedBox(height: 16),
-                                    FilledButton.icon(
-                                      onPressed: () => ref.invalidate(adminJobsProvider),
-                                      icon: const Icon(Icons.refresh),
-                                      label: const Text('إعادة المحاولة'),
-                                    ),
-                                  ],
+                        error: (e, _) => Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(24),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.error_outline,
+                                  size: 48,
+                                  color: AdminTheme.error,
                                 ),
-                              ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  'تعذر تحميل الوظائف',
+                                  style: Theme.of(
+                                    context,
+                                  ).textTheme.titleMedium,
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  '$e',
+                                  style: Theme.of(context).textTheme.bodySmall,
+                                  textAlign: TextAlign.center,
+                                ),
+                                const SizedBox(height: 16),
+                                FilledButton.icon(
+                                  onPressed: () =>
+                                      ref.invalidate(adminJobsProvider),
+                                  icon: const Icon(Icons.refresh),
+                                  label: const Text('إعادة المحاولة'),
+                                ),
+                              ],
                             ),
+                          ),
+                        ),
                       ),
                 ),
               ),
@@ -157,6 +230,8 @@ class AdminJobsScreen extends ConsumerWidget {
     final workDays = TextEditingController();
     final requirements = TextEditingController();
     final applyUrl = TextEditingController();
+    final whatsappNumber = TextEditingController();
+    final applyMessage = TextEditingController();
     String jobType = 'full_time';
     String workMode = 'onsite';
     final formKey = GlobalKey<FormState>();
@@ -314,64 +389,100 @@ class AdminJobsScreen extends ConsumerWidget {
                           ),
                         ],
                       ),
+                      const SizedBox(height: AppSpacing.lg),
+                      AdminFormSection(
+                        title: 'التقديم عبر واتساب',
+                        icon: Icons.chat_rounded,
+                        children: [
+                          TextFormField(
+                            controller: whatsappNumber,
+                            decoration: const InputDecoration(
+                              labelText: 'رقم واتساب التقديم (اختياري)',
+                              hintText: 'مثال: 9647XXXXXXXXX',
+                              helperText: 'بدون + أو صفر في البداية',
+                              isDense: true,
+                            ),
+                          ),
+                          const SizedBox(height: adminFormFieldSpacing),
+                          TextFormField(
+                            controller: applyMessage,
+                            decoration: const InputDecoration(
+                              labelText: 'رسالة التقديم (اختياري)',
+                              hintText:
+                                  'الرسالة الافتراضية: مرحباً، أريد التقديم على وظيفة...',
+                              isDense: true,
+                              alignLabelWithHint: true,
+                            ),
+                            maxLines: 3,
+                          ),
+                        ],
+                      ),
                     ],
                   ),
                 ),
               ),
             ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(),
-              child: const Text('إلغاء'),
-            ),
-            FilledButton(
-              onPressed: () async {
-                if (!formKey.currentState!.validate()) return;
-                try {
-                  await ref.read(adminJobsRepositoryProvider).insertJob(
-                        titleAr: titleAr.text.trim(),
-                        companyName: company.text.trim(),
-                        location: location.text.trim(),
-                        jobType: jobType,
-                        descriptionAr: descriptionAr.text.trim(),
-                        salary: salary.text.trim().isEmpty
-                            ? null
-                            : salary.text.trim(),
-                        workMode: workMode,
-                        workDays: workDays.text.trim().isEmpty
-                            ? null
-                            : workDays.text.trim(),
-                        requirements: requirements.text.trim().isEmpty
-                            ? null
-                            : requirements.text.trim(),
-                        applyUrl: applyUrl.text.trim().isEmpty
-                            ? null
-                            : applyUrl.text.trim(),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(),
+                child: const Text('إلغاء'),
+              ),
+              FilledButton(
+                onPressed: () async {
+                  if (!formKey.currentState!.validate()) return;
+                  try {
+                    await ref
+                        .read(adminJobsRepositoryProvider)
+                        .insertJob(
+                          titleAr: titleAr.text.trim(),
+                          companyName: company.text.trim(),
+                          location: location.text.trim(),
+                          jobType: jobType,
+                          descriptionAr: descriptionAr.text.trim(),
+                          salary: salary.text.trim().isEmpty
+                              ? null
+                              : salary.text.trim(),
+                          workMode: workMode,
+                          workDays: workDays.text.trim().isEmpty
+                              ? null
+                              : workDays.text.trim(),
+                          requirements: requirements.text.trim().isEmpty
+                              ? null
+                              : requirements.text.trim(),
+                          applyUrl: applyUrl.text.trim().isEmpty
+                              ? null
+                              : applyUrl.text.trim(),
+                          whatsappNumber: whatsappNumber.text.trim().isEmpty
+                              ? null
+                              : whatsappNumber.text.trim(),
+                          applyMessage: applyMessage.text.trim().isEmpty
+                              ? null
+                              : applyMessage.text.trim(),
+                        );
+                    if (ctx.mounted) Navigator.of(ctx).pop();
+                    ref.invalidate(adminJobsProvider);
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('تمت إضافة الوظيفة بنجاح'),
+                        ),
                       );
-                  if (ctx.mounted) Navigator.of(ctx).pop();
-                  ref.invalidate(adminJobsProvider);
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('تمت إضافة الوظيفة بنجاح'),
-                      ),
-                    );
+                    }
+                  } catch (e) {
+                    if (ctx.mounted) {
+                      ScaffoldMessenger.of(
+                        ctx,
+                      ).showSnackBar(SnackBar(content: Text('خطأ: $e')));
+                    }
                   }
-                } catch (e) {
-                  if (ctx.mounted) {
-                    ScaffoldMessenger.of(ctx).showSnackBar(
-                      SnackBar(content: Text('خطأ: $e')),
-                    );
-                  }
-                }
-              },
-              child: const Text('إضافة'),
-            ),
-          ],
+                },
+                child: const Text('إضافة'),
+              ),
+            ],
+          ),
         ),
       ),
-    ),
-  );
+    );
   }
 
   void _showEditJobDialog(
@@ -382,14 +493,26 @@ class AdminJobsScreen extends ConsumerWidget {
     final titleAr = TextEditingController(text: _str(job, 'title_ar'));
     final company = TextEditingController(text: _str(job, 'company_name'));
     final location = TextEditingController(text: _str(job, 'location'));
-    final descriptionAr = TextEditingController(text: _str(job, 'description_ar'));
+    final descriptionAr = TextEditingController(
+      text: _str(job, 'description_ar'),
+    );
     final salary = TextEditingController(text: _str(job, 'salary'));
     final workDays = TextEditingController(text: _str(job, 'work_days'));
     final requirements = TextEditingController(text: _str(job, 'requirements'));
     final applyUrl = TextEditingController(text: _str(job, 'apply_url'));
+    final whatsappNumber = TextEditingController(
+      text: _str(job, 'whatsapp_number'),
+    );
+    final applyMessage = TextEditingController(
+      text: _str(job, 'apply_message'),
+    );
 
-    String jobType = _str(job, 'job_type').isEmpty ? 'full_time' : _str(job, 'job_type');
-    String workMode = _str(job, 'work_mode').isEmpty ? 'onsite' : _str(job, 'work_mode');
+    String jobType = _str(job, 'job_type').isEmpty
+        ? 'full_time'
+        : _str(job, 'job_type');
+    String workMode = _str(job, 'work_mode').isEmpty
+        ? 'onsite'
+        : _str(job, 'work_mode');
 
     final formKey = GlobalKey<FormState>();
 
@@ -544,6 +667,34 @@ class AdminJobsScreen extends ConsumerWidget {
                           ),
                         ],
                       ),
+                      const SizedBox(height: AppSpacing.lg),
+                      AdminFormSection(
+                        title: 'التقديم عبر واتساب',
+                        icon: Icons.chat_rounded,
+                        children: [
+                          TextFormField(
+                            controller: whatsappNumber,
+                            decoration: const InputDecoration(
+                              labelText: 'رقم واتساب التقديم (اختياري)',
+                              hintText: 'مثال: 9647XXXXXXXXX',
+                              helperText: 'بدون + أو صفر في البداية',
+                              isDense: true,
+                            ),
+                          ),
+                          const SizedBox(height: adminFormFieldSpacing),
+                          TextFormField(
+                            controller: applyMessage,
+                            decoration: const InputDecoration(
+                              labelText: 'رسالة التقديم (اختياري)',
+                              hintText:
+                                  'الرسالة الافتراضية: مرحباً، أريد التقديم على وظيفة...',
+                              isDense: true,
+                              alignLabelWithHint: true,
+                            ),
+                            maxLines: 3,
+                          ),
+                        ],
+                      ),
                     ],
                   ),
                 ),
@@ -558,7 +709,9 @@ class AdminJobsScreen extends ConsumerWidget {
                 onPressed: () async {
                   if (!formKey.currentState!.validate()) return;
                   try {
-                    await ref.read(adminJobsRepositoryProvider).updateJob(
+                    await ref
+                        .read(adminJobsRepositoryProvider)
+                        .updateJob(
                           id: _str(job, 'id'),
                           titleAr: titleAr.text.trim(),
                           companyName: company.text.trim(),
@@ -578,21 +731,25 @@ class AdminJobsScreen extends ConsumerWidget {
                           applyUrl: applyUrl.text.trim().isEmpty
                               ? null
                               : applyUrl.text.trim(),
+                          whatsappNumber: whatsappNumber.text.trim().isEmpty
+                              ? null
+                              : whatsappNumber.text.trim(),
+                          applyMessage: applyMessage.text.trim().isEmpty
+                              ? null
+                              : applyMessage.text.trim(),
                         );
                     if (ctx.mounted) Navigator.of(ctx).pop();
                     ref.invalidate(adminJobsProvider);
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('تم تحديث الوظيفة بنجاح'),
-                        ),
+                        const SnackBar(content: Text('تم تحديث الوظيفة بنجاح')),
                       );
                     }
                   } catch (e) {
                     if (ctx.mounted) {
-                      ScaffoldMessenger.of(ctx).showSnackBar(
-                        SnackBar(content: Text('خطأ: $e')),
-                      );
+                      ScaffoldMessenger.of(
+                        ctx,
+                      ).showSnackBar(SnackBar(content: Text('خطأ: $e')));
                     }
                   }
                 },
@@ -605,11 +762,7 @@ class AdminJobsScreen extends ConsumerWidget {
     );
   }
 
-  void _confirmDeleteJob(
-    BuildContext context,
-    WidgetRef ref,
-    String jobId,
-  ) {
+  void _confirmDeleteJob(BuildContext context, WidgetRef ref, String jobId) {
     showDialog<void>(
       context: context,
       builder: (ctx) => Directionality(
@@ -623,28 +776,22 @@ class AdminJobsScreen extends ConsumerWidget {
               child: const Text('إلغاء'),
             ),
             FilledButton(
-              style: FilledButton.styleFrom(
-                backgroundColor: Colors.redAccent,
-              ),
+              style: FilledButton.styleFrom(backgroundColor: Colors.redAccent),
               onPressed: () async {
                 try {
-                  await ref
-                      .read(adminJobsRepositoryProvider)
-                      .deleteJob(jobId);
+                  await ref.read(adminJobsRepositoryProvider).deleteJob(jobId);
                   if (ctx.mounted) Navigator.of(ctx).pop();
                   ref.invalidate(adminJobsProvider);
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('تم حذف الوظيفة'),
-                      ),
+                      const SnackBar(content: Text('تم حذف الوظيفة')),
                     );
                   }
                 } catch (e) {
                   if (ctx.mounted) {
-                    ScaffoldMessenger.of(ctx).showSnackBar(
-                      SnackBar(content: Text('خطأ: $e')),
-                    );
+                    ScaffoldMessenger.of(
+                      ctx,
+                    ).showSnackBar(SnackBar(content: Text('خطأ: $e')));
                   }
                 }
               },
@@ -669,4 +816,3 @@ class AdminJobsScreen extends ConsumerWidget {
     }
   }
 }
-
