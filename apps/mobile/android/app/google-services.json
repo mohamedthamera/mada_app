@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "360671311223",
+    "project_id": "evrest-67b8a",
+    "storage_bucket": "evrest-67b8a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:360671311223:android:35387b3e0b7785a7095d72",
+        "android_client_info": {
+          "package_name": "io.flutter.examples.stocks"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "360671311223-g41iav44h6sipeqanqru41h2qpu1hi4c.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAY5F4UHg4R2ct04gJpp0LT1jFBzKIMN58"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "360671311223-g41iav44h6sipeqanqru41h2qpu1hi4c.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
