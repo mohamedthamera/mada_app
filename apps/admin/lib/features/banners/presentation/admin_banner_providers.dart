@@ -8,12 +8,13 @@ final adminBannersProvider = FutureProvider<List<BannerModel>>((ref) async {
   return repository.fetchBanners();
 });
 
-class AdminBannerNotifier extends StateNotifier<AsyncValue<void>> {
+class AdminBannerNotifier extends Notifier<AsyncValue<void>> {
   final AdminBannerRepository _repository;
-  final Ref _ref;
 
-  AdminBannerNotifier(this._repository, this._ref)
-    : super(const AsyncValue.data(null));
+  AdminBannerNotifier(this._repository);
+
+  @override
+  AsyncValue<void> build() => const AsyncValue.data(null);
 
   Future<void> addBanner({
     required BannerModel banner,
@@ -31,7 +32,7 @@ class AdminBannerNotifier extends StateNotifier<AsyncValue<void>> {
         videoBytes: videoBytes,
         videoFileName: videoFileName,
       );
-      _ref.invalidate(adminBannersProvider);
+      ref.invalidate(adminBannersProvider);
       state = const AsyncValue.data(null);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
@@ -54,7 +55,7 @@ class AdminBannerNotifier extends StateNotifier<AsyncValue<void>> {
         videoBytes: videoBytes,
         videoFileName: videoFileName,
       );
-      _ref.invalidate(adminBannersProvider);
+      ref.invalidate(adminBannersProvider);
       state = const AsyncValue.data(null);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
@@ -69,7 +70,7 @@ class AdminBannerNotifier extends StateNotifier<AsyncValue<void>> {
     state = const AsyncValue.loading();
     try {
       await _repository.deleteBanner(id, imageUrl, videoUrl: videoUrl);
-      _ref.invalidate(adminBannersProvider);
+      ref.invalidate(adminBannersProvider);
       state = const AsyncValue.data(null);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
@@ -78,7 +79,6 @@ class AdminBannerNotifier extends StateNotifier<AsyncValue<void>> {
 }
 
 final adminBannerActionProvider =
-    StateNotifierProvider<AdminBannerNotifier, AsyncValue<void>>((ref) {
-      final repository = ref.watch(adminBannerRepositoryProvider);
-      return AdminBannerNotifier(repository, ref);
+    NotifierProvider<AdminBannerNotifier, AsyncValue<void>>(() {
+      throw UnimplementedError('AdminBannerNotifier must be overridden');
     });
