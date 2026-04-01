@@ -1,20 +1,17 @@
 #!/usr/bin/env bash
 set -e
 
-FLUTTER_VERSION="3.27.4"
+# النسخة الحديثة المطلوبة
+FLUTTER_VERSION="3.41.6"
 
 echo "=== Installing Flutter SDK $FLUTTER_VERSION ==="
-git clone https://github.com/flutter/flutter.git --depth 1 -b "$FLUTTER_VERSION" "$HOME/flutter"
+git clone https://github.com/flutter/flutter.git --branch "$FLUTTER_VERSION" --depth 1 "$HOME/flutter"
 export PATH="$HOME/flutter/bin:$PATH"
 
+# تحقق من النسخ
+which flutter
 flutter --version
 dart --version
-
-echo "=== Creating env.dev from Vercel Environment Variables ==="
-cat > env.dev <<EOF
-SUPABASE_URL=$SUPABASE_URL
-SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY
-EOF
 
 echo "=== Getting dependencies for shared package ==="
 cd ../../packages/shared
