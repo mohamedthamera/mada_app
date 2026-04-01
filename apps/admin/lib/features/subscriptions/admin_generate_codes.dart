@@ -6,8 +6,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared/shared.dart';
 import '../../ui_system/app_theme.dart';
 
-// ignore: deprecated_member_use, avoid_web_libraries_in_flutter
-import 'dart:html' if (dart.library.io) 'admin_generate_codes_stub.dart' as html;
+import 'admin_generate_codes_stub.dart'
+    if (dart.library.html) 'admin_generate_codes_web.dart';
 
 class AdminGenerateCodes extends StatefulWidget {
   const AdminGenerateCodes({super.key});
@@ -161,16 +161,22 @@ class _AdminGenerateCodesState extends State<AdminGenerateCodes> {
       _showDownloadDialog(csv, rows.length);
     } on PostgrestException catch (e) {
       final msg = e.message.toLowerCase();
-      final userEmail = Supabase.instance.client.auth.currentSession?.user.email ?? 'بريدك@example.com';
+      final userEmail =
+          Supabase.instance.client.auth.currentSession?.user.email ??
+          'بريدك@example.com';
       String userMessage;
       if (msg.contains('not authenticated') || msg.contains('jwt')) {
         userMessage = 'انتهت الجلسة. سجّل الدخول مرة أخرى.';
-      } else if (msg.contains('no profile found') || msg.contains('forbidden') || msg.contains('admin required')) {
-        userMessage = 'صلاحية الأدمن مطلوبة.\n'
+      } else if (msg.contains('no profile found') ||
+          msg.contains('forbidden') ||
+          msg.contains('admin required')) {
+        userMessage =
+            'صلاحية الأدمن مطلوبة.\n'
             'في Supabase: SQL Editor → نفّذ:\n'
             "select set_admin_by_email('$userEmail');";
       } else if (msg.contains('user_id=') || msg.contains('role=')) {
-        userMessage = '${e.message}\n\nلتفعيل الصلاحيات في Supabase → SQL Editor:\n'
+        userMessage =
+            '${e.message}\n\nلتفعيل الصلاحيات في Supabase → SQL Editor:\n'
             "select set_admin_by_email('$userEmail');";
       } else {
         userMessage = e.message;
@@ -181,20 +187,28 @@ class _AdminGenerateCodesState extends State<AdminGenerateCodes> {
           _statusMessage = 'فشل التوليد';
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(userMessage.split('\n').first), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text(userMessage.split('\n').first),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     } catch (e) {
-      final userEmail = Supabase.instance.client.auth.currentSession?.user.email ?? 'بريدك@example.com';
+      final userEmail =
+          Supabase.instance.client.auth.currentSession?.user.email ??
+          'بريدك@example.com';
       if (mounted) {
         setState(() {
-          _error = 'حدث خطأ.\nفي Supabase → SQL Editor نفّذ:\n'
+          _error =
+              'حدث خطأ.\nفي Supabase → SQL Editor نفّذ:\n'
               "select set_admin_by_email('$userEmail');";
           _statusMessage = 'فشل التوليد';
         });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('فشل التوليد. تحقق من صلاحيات الأدمن (انظر الصندوق الأحمر أعلاه).'),
+            content: Text(
+              'فشل التوليد. تحقق من صلاحيات الأدمن (انظر الصندوق الأحمر أعلاه).',
+            ),
             backgroundColor: Colors.red,
           ),
         );
@@ -240,21 +254,22 @@ class _AdminGenerateCodesState extends State<AdminGenerateCodes> {
   void _downloadCSV(String csvString) {
     if (kIsWeb) {
       final bytes = utf8.encode(csvString);
-      final blob = html.Blob([bytes]);
-      final url = html.Url.createObjectUrlFromBlob(blob);
-      final anchor = html.AnchorElement()
+      final blob = Blob([bytes]);
+      final url = Url.createObjectUrlFromBlob(blob);
+      final anchor = AnchorElement()
         ..href = url
-        ..setAttribute('download', 'lifetime_codes_${DateTime.now().millisecondsSinceEpoch}.csv');
+        ..setAttribute(
+          'download',
+          'lifetime_codes_${DateTime.now().millisecondsSinceEpoch}.csv',
+        );
       anchor.click();
-      html.Url.revokeObjectUrl(url);
+      Url.revokeObjectUrl(url);
     } else {
       showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
           title: const Text('بيانات CSV'),
-          content: SingleChildScrollView(
-            child: SelectableText(csvString),
-          ),
+          content: SingleChildScrollView(child: SelectableText(csvString)),
           actions: [
             TextButton(
               onPressed: () {
@@ -279,9 +294,9 @@ class _AdminGenerateCodesState extends State<AdminGenerateCodes> {
   void _copyAllCodes() {
     final codes = _generatedCodes.map((c) => c['code']).join('\n');
     Clipboard.setData(ClipboardData(text: codes));
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('تم نسخ كل الأكواد')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('تم نسخ كل الأكواد')));
   }
 
   Future<void> _selectExpirationDate() async {
@@ -323,16 +338,17 @@ class _AdminGenerateCodesState extends State<AdminGenerateCodes> {
           const SizedBox(height: AppSpacing.xs),
           Text(
             'إنشاء أكواد قابلة للاستخدام لتفعيل الاشتراك مدى الحياة',
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: AdminTheme.textMuted,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: AdminTheme.textMuted),
           ),
           const SizedBox(height: AppSpacing.sm),
           Builder(
             builder: (context) {
               final session = Supabase.instance.client.auth.currentSession;
               final email = session?.user.email ?? '—';
-              final roleOk = _currentRole != null &&
+              final roleOk =
+                  _currentRole != null &&
                   _currentRole!.toLowerCase().contains('admin');
               return Container(
                 padding: const EdgeInsets.symmetric(
@@ -341,11 +357,11 @@ class _AdminGenerateCodesState extends State<AdminGenerateCodes> {
                 ),
                 decoration: BoxDecoration(
                   color: roleOk
-? AdminTheme.primary.withValues(alpha: 0.08)
+                      ? AdminTheme.primary.withValues(alpha: 0.08)
                       : AdminTheme.textMuted.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(AdminTheme.radiusSm),
                   border: Border.all(
-                        color: roleOk
+                    color: roleOk
                         ? AdminTheme.primary.withValues(alpha: 0.3)
                         : AdminTheme.border.withValues(alpha: 0.5),
                   ),
@@ -365,18 +381,18 @@ class _AdminGenerateCodesState extends State<AdminGenerateCodes> {
                         children: [
                           Text(
                             'البريد: $email  |  الدور: ${_currentRole ?? 'جاري التحقق...'}',
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: AdminTheme.textSecondary,
-                            ),
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(color: AdminTheme.textSecondary),
                           ),
                           if (!roleOk && _currentRole != null) ...[
                             const SizedBox(height: 4),
                             Text(
                               'لتفعيل الأدمن: Supabase → SQL Editor → select set_admin_by_email(\'$email\');',
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: AdminTheme.textMuted,
-                                fontSize: 11,
-                              ),
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(
+                                    color: AdminTheme.textMuted,
+                                    fontSize: 11,
+                                  ),
                             ),
                           ],
                         ],
@@ -390,12 +406,15 @@ class _AdminGenerateCodesState extends State<AdminGenerateCodes> {
                     if (!roleOk && _currentRole != null)
                       TextButton.icon(
                         onPressed: () {
-                          Clipboard.setData(ClipboardData(
-                            text: "select set_admin_by_email('$email');",
-                          ));
+                          Clipboard.setData(
+                            ClipboardData(
+                              text: "select set_admin_by_email('$email');",
+                            ),
+                          );
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                                content: Text('تم نسخ الجملة إلى الحافظة')),
+                              content: Text('تم نسخ الجملة إلى الحافظة'),
+                            ),
                           );
                         },
                         icon: const Icon(Icons.copy, size: 16),
@@ -435,7 +454,9 @@ class _AdminGenerateCodesState extends State<AdminGenerateCodes> {
               ),
               if (_expiresAt != null)
                 IconButton(
-                  onPressed: _isLoading ? null : () => setState(() => _expiresAt = null),
+                  onPressed: _isLoading
+                      ? null
+                      : () => setState(() => _expiresAt = null),
                   icon: const Icon(Icons.clear),
                   tooltip: 'إلغاء الانتهاء',
                 ),
@@ -446,15 +467,21 @@ class _AdminGenerateCodesState extends State<AdminGenerateCodes> {
             spacing: AppSpacing.sm,
             children: [
               TextButton(
-                onPressed: _isLoading ? null : () => _quantityController.text = '10',
+                onPressed: _isLoading
+                    ? null
+                    : () => _quantityController.text = '10',
                 child: const Text('10'),
               ),
               TextButton(
-                onPressed: _isLoading ? null : () => _quantityController.text = '100',
+                onPressed: _isLoading
+                    ? null
+                    : () => _quantityController.text = '100',
                 child: const Text('100'),
               ),
               TextButton(
-                onPressed: _isLoading ? null : () => _quantityController.text = '1000',
+                onPressed: _isLoading
+                    ? null
+                    : () => _quantityController.text = '1000',
                 child: const Text('1000'),
               ),
             ],
@@ -466,10 +493,15 @@ class _AdminGenerateCodesState extends State<AdminGenerateCodes> {
               padding: const EdgeInsets.all(AppSpacing.sm),
               decoration: BoxDecoration(
                 color: AdminTheme.border.withValues(alpha: 0.15),
-                border: Border.all(color: AdminTheme.border.withValues(alpha: 0.5)),
+                border: Border.all(
+                  color: AdminTheme.border.withValues(alpha: 0.5),
+                ),
                 borderRadius: BorderRadius.circular(AdminTheme.radiusSm),
               ),
-              child: Text(_statusMessage!, style: TextStyle(color: AdminTheme.textSecondary)),
+              child: Text(
+                _statusMessage!,
+                style: TextStyle(color: AdminTheme.textSecondary),
+              ),
             ),
           ],
           if (_error != null) ...[
@@ -479,7 +511,9 @@ class _AdminGenerateCodesState extends State<AdminGenerateCodes> {
               padding: const EdgeInsets.all(AppSpacing.md),
               decoration: BoxDecoration(
                 color: AdminTheme.error.withValues(alpha: 0.1),
-                border: Border.all(color: AdminTheme.error.withValues(alpha: 0.3)),
+                border: Border.all(
+                  color: AdminTheme.error.withValues(alpha: 0.3),
+                ),
                 borderRadius: BorderRadius.circular(AdminTheme.radiusMd),
               ),
               child: Row(
@@ -497,11 +531,13 @@ class _AdminGenerateCodesState extends State<AdminGenerateCodes> {
                     IconButton(
                       icon: const Icon(Icons.copy, size: 18),
                       onPressed: () {
-                        final match = RegExp(r"select set_admin_by_email\('[^']+'\)")
-                            .firstMatch(_error!);
+                        final match = RegExp(
+                          r"select set_admin_by_email\('[^']+'\)",
+                        ).firstMatch(_error!);
                         if (match != null) {
                           Clipboard.setData(
-                              ClipboardData(text: '${match.group(0)};'));
+                            ClipboardData(text: '${match.group(0)};'),
+                          );
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(content: Text('تم نسخ الجملة')),
                           );
@@ -520,11 +556,16 @@ class _AdminGenerateCodesState extends State<AdminGenerateCodes> {
                 ? const SizedBox(
                     width: 20,
                     height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
                   )
                 : const Icon(Icons.generating_tokens),
             label: Text(_isLoading ? 'جاري التوليد...' : 'توليد الأكواد'),
-            style: FilledButton.styleFrom(minimumSize: const Size(double.infinity, 48)),
+            style: FilledButton.styleFrom(
+              minimumSize: const Size(double.infinity, 48),
+            ),
           ),
           if (_generatedCodes.isNotEmpty) ...[
             const SizedBox(height: AppSpacing.xl),
@@ -562,7 +603,9 @@ class _AdminGenerateCodesState extends State<AdminGenerateCodes> {
               ),
               child: ListView.builder(
                 padding: const EdgeInsets.all(AppSpacing.md),
-                itemCount: _generatedCodes.length > 20 ? 20 : _generatedCodes.length,
+                itemCount: _generatedCodes.length > 20
+                    ? 20
+                    : _generatedCodes.length,
                 itemBuilder: (context, index) {
                   final codeData = _generatedCodes[index];
                   return Padding(
@@ -571,8 +614,12 @@ class _AdminGenerateCodesState extends State<AdminGenerateCodes> {
                       padding: const EdgeInsets.all(AppSpacing.md),
                       decoration: BoxDecoration(
                         color: AdminTheme.surface,
-                        border: Border.all(color: AdminTheme.border.withValues(alpha: 0.5)),
-                        borderRadius: BorderRadius.circular(AdminTheme.radiusSm),
+                        border: Border.all(
+                          color: AdminTheme.border.withValues(alpha: 0.5),
+                        ),
+                        borderRadius: BorderRadius.circular(
+                          AdminTheme.radiusSm,
+                        ),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -591,7 +638,9 @@ class _AdminGenerateCodesState extends State<AdminGenerateCodes> {
                               ),
                               IconButton(
                                 onPressed: () {
-                                  Clipboard.setData(ClipboardData(text: codeData['code']!));
+                                  Clipboard.setData(
+                                    ClipboardData(text: codeData['code']!),
+                                  );
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(content: Text('تم النسخ')),
                                   );
