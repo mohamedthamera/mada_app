@@ -30,7 +30,7 @@ migrate_working_dir/
 **/build/
 **/coverage/
 
-# Env / secrets (لا ترفع مفاتيح Supabase إلى GitHub)
+# Env / secrets
 .env
 .env.*
 !.env.example
@@ -52,5 +52,17 @@ node_modules/
 
 # Supabase local
 supabase/.temp/
+
+# Vercel
 .vercel
 .env*.local
+.vercel-redeploy
+
+# Flutter SDK (never commit)
+flutter/
+flutter.tar.xz
+
+# Test/scratch files
+robust_admin_codes.dart
+test_function.dart
+testsprite_tests/
